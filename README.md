@@ -26,6 +26,7 @@
 - [x] 完成基于 BGE 检索与 Qwen3-1.7B 的生成式 RAG demo 和引用评估
 - [x] 完成 SQLite vector store、BM25 reranker baseline，并接入生成式 RAG
 - [x] 完成资料不足拒答、高风险意图拦截和合成安全 benchmark
+- [x] 完成基于授权 CMB-Exam train split 的本地闭域 RAG 实验（原始与派生数据不入库）
 - [ ] 完成生产级 ANN/vector DB、神经 reranker、真实授权知识库、DPO 和服务化实验
 
 ## 项目结构
@@ -39,7 +40,9 @@ qwen-medical-qa/
 │   ├── check_environment.py   # 检查 Python、PyTorch、CUDA 和显存
 │   ├── run_baseline.py        # 基线推理与延迟记录
 │   ├── summarize_baseline.py  # 汇总延迟、吞吐和显存
-│   └── prepare_cmb.py         # 下载、清洗并固定 CMB-Exam 数据子集
+│   ├── prepare_cmb.py         # 下载、清洗并固定 CMB-Exam 数据子集
+│   ├── prepare_cmb_rag.py     # 从本地 CMB train/val 构建闭域检索语料
+│   └── run_cmb_rag.py         # 运行 CMB 闭域 RAG 选择题评测
 ├── src/qwen_medical_qa/      # 后续抽取可复用模块
 ├── tests/                    # 自动化测试
 ├── reports/                  # 可提交的实验报告和环境记录
@@ -240,6 +243,57 @@ python scripts/run_rag_qa.py `
 真实知识库接入前，先复制 [`data/sources/rag-knowledge-base.template.yaml`](data/sources/rag-knowledge-base.template.yaml)，补齐来源、版本、许可证、隐私和专家审核字段；模板本身不代表任何真实数据已经获准使用。
 
 脚本会记录每条样本的输入、模型输出、输入/输出 token 数、单条耗时和 tokens/s。第一阶段先不追求准确率数字，先确认模型、数据格式、生成参数和记录链路都能稳定运行。
+
+## 当前阶段：CMB-Exam 闭域 RAG v1
+
+在没有可公开上传的真实医学知识库时，使用已有来源记录的 CMB-Exam `train` split 做本地闭域实验。检索文档是“题干 + 选项 + 参考答案”的已解答训练例题，不是临床指南；原始 CMB、处理结果、派生语料和向量索引都保留在本地忽略目录，不能上传到 GitHub。
+
+本阶段先做泄漏控制：按题干与选项去重，并删除 train/val 重叠；val 只用于查询和答案评测。由于没有人工标注的相关文档 ID，不报告 Recall@k/Hit@k/MRR。完整数据处理、配置、迁移矩阵、延迟和局限见 [`reports/cmb-rag-v1.md`](reports/cmb-rag-v1.md)。
+
+```powershell
+python scripts/prepare_cmb_rag.py
+
+python scripts/build_embedding_index.py `
+  --input data/processed/cmb-rag-v1/knowledge_base.jsonl `
+  --output outputs/cmb-rag-v1/index.json `
+  --chunk-size 512 `
+  --chunk-overlap 0 `
+  --device cuda `
+  --batch-size 16 `
+  --local-files-only
+
+python scripts/build_vector_store.py `
+  --index outputs/cmb-rag-v1/index.json `
+  --output outputs/cmb-rag-v1/index.sqlite
+
+python scripts/retrieve_vector_store.py `
+  --store outputs/cmb-rag-v1/index.sqlite `
+  --input data/processed/cmb-rag-v1/qa_benchmark.jsonl `
+  --output outputs/cmb-rag-v1/retrieval.jsonl `
+  --device cuda `
+  --batch-size 16 `
+  --candidate-k 5 `
+  --top-k 3 `
+  --reranker bm25 `
+  --local-files-only
+
+python scripts/run_cmb_rag.py `
+  --model Qwen/Qwen3-1.7B `
+  --input data/processed/cmb-rag-v1/qa_benchmark.jsonl `
+  --retrieval outputs/cmb-rag-v1/retrieval.jsonl `
+  --output outputs/cmb-rag-v1/rag-base-val.jsonl `
+  --max-new-tokens 4 `
+  --max-input-tokens 2048 `
+  --seed 42 `
+  --greedy `
+  --local-files-only
+
+python scripts/evaluate_benchmark.py `
+  --input outputs/cmb-rag-v1/rag-base-val.jsonl `
+  --output reports/cmb-rag-v1-rag-base-val.json
+```
+
+本次匹配运行中，直接基线为 107/240（44.58%），dense-only RAG 为 111/240（46.25%），dense + BM25 为 115/240（47.92%）。由于 greedy CUDA 推理重跑出现过 112 与 115 两个结果，这些数字只作为初步工程结果；不能解释为稳定的医疗能力提升。详细结果见 [`reports/cmb-rag-v1.md`](reports/cmb-rag-v1.md)。
 
 Windows CUDA 环境的 PyTorch 安装命令会根据驱动和 CUDA wheel 选择单独确定，不把一个可能失效的固定命令写死在项目中。
 
