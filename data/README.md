@@ -23,3 +23,8 @@
 }
 ```
 
+## benchmark_v0
+
+`benchmark_v0.jsonl` 是 12 条人工编写的医学术语教育性选择题，用于验证“固定测试集 -> 生成 -> 选项抽取 -> 准确率”的链路。它不是正式医疗数据集，也不代表临床知识评测结果。
+
+运行基线后，可以使用 `scripts/evaluate_benchmark.py` 计算选项字母的 exact match accuracy 和 invalid output rate。正式数据集接入后，必须替换数据来源、许可证、划分规则和评测说明。

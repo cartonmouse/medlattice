@@ -44,13 +44,29 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
     return records
 
 
-def apply_chat_template(tokenizer: Any, question: str, thinking: bool) -> str:
+def format_user_prompt(record: dict[str, Any]) -> str:
+    question = record["question"]
+    choices = record.get("choices")
+    if not choices:
+        return question
+
+    if not isinstance(choices, dict):
+        raise ValueError(f"choices must be an object for record {record['id']}")
+    options = "\n".join(f"{key}. {value}" for key, value in choices.items())
+    return (
+        f"{question}\n\n"
+        f"选项：\n{options}\n\n"
+        "这是一个教育性医学术语选择题。请只输出一个选项字母，不要输出解释。"
+    )
+
+
+def apply_chat_template(tokenizer: Any, record: dict[str, Any], thinking: bool) -> str:
     messages = [
         {
             "role": "system",
             "content": "你是一个用于研究评测的中文医疗问答模型。回答仅供学习演示，不构成医疗建议。",
         },
-        {"role": "user", "content": question},
+        {"role": "user", "content": format_user_prompt(record)},
     ]
     try:
         return tokenizer.apply_chat_template(
@@ -93,7 +109,7 @@ def main() -> None:
     run_started = datetime.now(timezone.utc).isoformat()
     with args.output.open("w", encoding="utf-8") as handle:
         for record in records:
-            prompt_text = apply_chat_template(tokenizer, record["question"], args.thinking)
+            prompt_text = apply_chat_template(tokenizer, record, args.thinking)
             inputs = tokenizer(
                 [prompt_text],
                 return_tensors="pt",
@@ -137,6 +153,8 @@ def main() -> None:
             result = {
                 "id": record["id"],
                 "question": record["question"],
+                "task_type": record.get("task_type", "open_ended"),
+                "choices": record.get("choices"),
                 "reference_answer": record.get("reference_answer"),
                 "model": args.model,
                 "thinking": args.thinking,

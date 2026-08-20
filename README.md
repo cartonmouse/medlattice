@@ -15,6 +15,7 @@
 - [x] 添加环境检查脚本
 - [x] 添加 Qwen3-1.7B 基线推理脚本
 - [x] 添加最小数据格式测试
+- [x] 添加 v0 选择题 benchmark 和自动评测器
 - [x] 在本机 RTX 4060 Laptop 8GB 上完成基线运行
 - [ ] 完成公开数据集的来源、许可证和划分记录
 - [ ] 完成 QLoRA、RAG、DPO 和服务化实验
@@ -57,6 +58,22 @@ python scripts/run_baseline.py `
 python scripts/summarize_baseline.py `
   --input outputs/baseline.jsonl
 ```
+
+运行 v0 选择题 benchmark：
+
+```powershell
+python scripts/run_baseline.py `
+  --input data/benchmark_v0.jsonl `
+  --output outputs/benchmark_v0_baseline.jsonl `
+  --max-new-tokens 16 `
+  --greedy
+
+python scripts/evaluate_benchmark.py `
+  --input outputs/benchmark_v0_baseline.jsonl `
+  --output reports/benchmark-v0-baseline.json
+```
+
+这里的 accuracy 只表示选项字母是否匹配参考答案；它不能替代领域专家评审，也不能直接解释为医疗准确率。
 
 脚本会记录每条样本的输入、模型输出、输入/输出 token 数、单条耗时和 tokens/s。第一阶段先不追求准确率数字，先确认模型、数据格式、生成参数和记录链路都能稳定运行。
 

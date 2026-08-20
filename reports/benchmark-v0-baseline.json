@@ -1,0 +1,97 @@
+{
+  "task": "multiple_choice_exact_letter",
+  "total": 12,
+  "correct": 12,
+  "invalid": 0,
+  "accuracy": 1.0,
+  "invalid_rate": 0.0,
+  "details": [
+    {
+      "id": "bench-001",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "bench-002",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "bench-003",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "bench-004",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "bench-005",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "bench-006",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "bench-007",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "bench-008",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "bench-009",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "bench-010",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "bench-011",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "bench-012",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    }
+  ],
+  "model": "Qwen/Qwen3-1.7B",
+  "thinking": false,
+  "prediction_file": "outputs\\benchmark_v0_baseline.jsonl"
+}
