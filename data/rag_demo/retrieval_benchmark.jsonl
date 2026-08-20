@@ -1,0 +1,5 @@
+{"id":"rag-demo-001","question":"患者自己感觉到的异常表现属于什么术语？","relevant_doc_ids":["term-symptom"]}
+{"id":"rag-demo-002","question":"通过观察或检查发现的客观表现叫什么？","relevant_doc_ids":["term-sign"]}
+{"id":"rag-demo-003","question":"什么情况表示不宜采用某种治疗或检查？","relevant_doc_ids":["term-contraindication"]}
+{"id":"rag-demo-004","question":"区分多个可能疾病的诊断过程叫什么？","relevant_doc_ids":["term-differential"]}
+{"id":"rag-demo-005","question":"描述疾病可能发展和结局的术语是什么？","relevant_doc_ids":["term-prognosis"]}

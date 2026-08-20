@@ -1,0 +1,3 @@
+# RAG embedding v1 uses the torch and transformers dependencies from
+# requirements-baseline.txt. The model weights are downloaded separately:
+# BAAI/bge-small-zh-v1.5 (MIT license).

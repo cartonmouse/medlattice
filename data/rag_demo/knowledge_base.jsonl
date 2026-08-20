@@ -1,0 +1,5 @@
+{"doc_id":"term-symptom","title":"医学术语：症状","text":"在本演示知识库中，症状指患者主观感受到的异常表现。该定义仅用于检索链路演示，不用于诊断或治疗建议。","source":"synthetic-demo","license":"CC0-1.0"}
+{"doc_id":"term-sign","title":"医学术语：体征","text":"在本演示知识库中，体征指通过观察、体格检查或其他检查发现的客观表现。该定义仅用于检索链路演示，不用于诊断或治疗建议。","source":"synthetic-demo","license":"CC0-1.0"}
+{"doc_id":"term-contraindication","title":"医学术语：禁忌证","text":"在本演示知识库中，禁忌证指不宜采用某种检查、操作或治疗的情况。具体判断必须依据经过审核的专业资料和医生意见。","source":"synthetic-demo","license":"CC0-1.0"}
+{"doc_id":"term-differential","title":"医学术语：鉴别诊断","text":"在本演示知识库中，鉴别诊断指根据症状、体征、检查结果等信息，区分多个可能疾病或原因的诊断过程。","source":"synthetic-demo","license":"CC0-1.0"}
+{"doc_id":"term-prognosis","title":"医学术语：预后","text":"在本演示知识库中，预后指对疾病可能的发展过程和结局的判断或描述。个体预后需要结合具体病情和专业评估。","source":"synthetic-demo","license":"CC0-1.0"}

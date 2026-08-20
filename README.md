@@ -21,7 +21,10 @@
 - [x] 完成 CMB-Exam v1 的清洗、固定子集和 SHA-256 报告
 - [x] 完成 SFT messages 格式和 QLoRA smoke 链路
 - [x] 完成 CMB-Exam v1 的正式 QLoRA 训练和基线对照评测
-- [ ] 完成 RAG、DPO 和服务化实验
+- [x] 完成 RAG v0 文档摄取、TF-IDF 检索、引用提示和检索评测
+- [x] 完成 BGE 中文 embedding 检索器与 TF-IDF 对照
+- [x] 完成基于 BGE 检索与 Qwen3-1.7B 的生成式 RAG demo 和引用评估
+- [ ] 完成 vector DB、reranker、生成式 RAG、DPO 和服务化实验
 
 ## 项目结构
 
@@ -120,6 +123,55 @@ python scripts/train_qlora.py --config configs/qlora.yaml
 smoke 结果见 [`reports/qlora-smoke.md`](reports/qlora-smoke.md)。它只证明训练链路和 adapter 加载可用，不代表正式准确率提升。
 
 正式训练使用 5,000 条 train、240 条 val，在本机 RTX 4060 Laptop 8GB 上完成 1 epoch QLoRA。基础模型在 val 上为 44.58%，QLoRA adapter 为 50.42%，详细配置、逐题迁移统计和复现命令见 [`reports/qlora-full.md`](reports/qlora-full.md)。这里的指标仍然只是 CMB-Exam 单项选择题的答案字母 exact-match，不能解释为医疗准确率。
+
+## 当前阶段：RAG v0
+
+RAG v0 先使用仓库内 5 条合成演示文档，完成“JSONL 文档 -> chunk -> TF-IDF index -> top-k 检索 -> 带 chunk 引用的 prompt -> Hit@k/MRR”链路。它不包含真实医疗资料，也还没有接入生成模型，因此结果只用于验证检索工程，不代表医疗问答效果。详细设计和结果见 [`reports/rag-v0.md`](reports/rag-v0.md)。
+
+```powershell
+python scripts/build_rag_index.py `
+  --input data/rag_demo/knowledge_base.jsonl `
+  --output outputs/rag-v0/index.json
+
+python scripts/retrieve_rag.py `
+  --index outputs/rag-v0/index.json `
+  --input data/rag_demo/retrieval_benchmark.jsonl `
+  --output outputs/rag-v0/retrieval.jsonl
+
+python scripts/evaluate_rag.py `
+  --input outputs/rag-v0/retrieval.jsonl `
+  --output reports/rag-v0-retrieval.json
+```
+
+当前演示基准为 5/5 Hit@1、5/5 Hit@3、MRR@3 为 1.0。下一步是在同一评测口径下接入 embedding retriever，再接 Qwen 生成和引用忠实性评测。
+
+Embedding v1 已接入 `BAAI/bge-small-zh-v1.5`，使用 Transformers、CLS pooling、512 维归一化向量和 CUDA 推理；在当前 5 条演示查询上与 TF-IDF 一样达到 Hit@1=1.0。详细配置、对照和局限见 [`reports/rag-embedding-v1.md`](reports/rag-embedding-v1.md)。模型缓存和 dense index 保持在本地，不提交到 GitHub。
+
+## 当前阶段：生成式 RAG v1
+
+在 BGE dense retriever 之后接入 Qwen3-1.7B 基础模型，完成“检索 -> 带 chunk 编号的上下文 prompt -> 生成回答 -> 答案词与引用自动评估”。本次使用 5 条合成演示问题、`top_k=3`、greedy decoding 和 `max_new_tokens=64`，Retrieval Hit@3、目标术语匹配、有效引用率和 grounded answer 自动代理指标均为 1.0。详细定义、显存、延迟和局限见 [`reports/rag-qa-v1.md`](reports/rag-qa-v1.md)。这些数字只证明端到端 demo 链路可运行，不代表医疗准确率或人工引用忠实性。
+
+```powershell
+python scripts/run_rag_qa.py `
+  --model Qwen/Qwen3-1.7B `
+  --index outputs/rag-embedding-v1/index.json `
+  --input data/rag_demo/qa_benchmark.jsonl `
+  --output outputs/rag-qa-v1/qwen3-base.jsonl `
+  --device cuda `
+  --embedding-batch-size 8 `
+  --top-k 3 `
+  --max-new-tokens 64 `
+  --max-input-tokens 2048 `
+  --greedy `
+  --local-files-only
+
+python scripts/evaluate_rag_qa.py `
+  --input outputs/rag-qa-v1/qwen3-base.jsonl `
+  --output reports/rag-qa-v1.json `
+  --k 3
+```
+
+本阶段使用基础 Qwen，没有加载面向选择题字母输出的 QLoRA adapter；这样可以把开放式引用生成与选择题微调作为两个可解释的实验变量。下一步再接入合法授权知识库、vector DB、reranker，并扩展资料不足拒答和引用忠实性评测。
 
 脚本会记录每条样本的输入、模型输出、输入/输出 token 数、单条耗时和 tokens/s。第一阶段先不追求准确率数字，先确认模型、数据格式、生成参数和记录链路都能稳定运行。
 
