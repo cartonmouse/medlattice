@@ -24,7 +24,9 @@
 - [x] 完成 RAG v0 文档摄取、TF-IDF 检索、引用提示和检索评测
 - [x] 完成 BGE 中文 embedding 检索器与 TF-IDF 对照
 - [x] 完成基于 BGE 检索与 Qwen3-1.7B 的生成式 RAG demo 和引用评估
-- [ ] 完成 vector DB、reranker、生成式 RAG、DPO 和服务化实验
+- [x] 完成 SQLite vector store、BM25 reranker baseline，并接入生成式 RAG
+- [x] 完成资料不足拒答、高风险意图拦截和合成安全 benchmark
+- [ ] 完成生产级 ANN/vector DB、神经 reranker、真实授权知识库、DPO 和服务化实验
 
 ## 项目结构
 
@@ -172,6 +174,70 @@ python scripts/evaluate_rag_qa.py `
 ```
 
 本阶段使用基础 Qwen，没有加载面向选择题字母输出的 QLoRA adapter；这样可以把开放式引用生成与选择题微调作为两个可解释的实验变量。下一步再接入合法授权知识库、vector DB、reranker，并扩展资料不足拒答和引用忠实性评测。
+
+## 当前阶段：Vector Store v0 与 Reranker baseline
+
+在 BGE dense index 之上增加 SQLite 持久化 vector store，并实现“dense candidate top-5 -> BM25 reranker -> final top-3”两阶段检索。生成式 RAG 脚本现在支持 `--store` 和 `--reranker bm25`。5 条合成查询上，JSON dense、SQLite dense 和 SQLite+BM25 的 Hit@1、Hit@3、MRR@3 都为 1.0；BM25 改变了非目标候选顺序，但 toy benchmark 不足以证明 reranker 有真实收益。详细设计、端到端结果和局限见 [`reports/vector-store-reranker-v0.md`](reports/vector-store-reranker-v0.md)。
+
+```powershell
+python scripts/build_vector_store.py `
+  --index outputs/rag-embedding-v1/index.json `
+  --output outputs/vector-store-v0/index.sqlite
+
+python scripts/retrieve_vector_store.py `
+  --store outputs/vector-store-v0/index.sqlite `
+  --input data/rag_demo/retrieval_benchmark.jsonl `
+  --output outputs/vector-store-v0/bm25.jsonl `
+  --device cuda `
+  --candidate-k 5 `
+  --top-k 3 `
+  --reranker bm25 `
+  --local-files-only
+
+python scripts/evaluate_rag.py `
+  --input outputs/vector-store-v0/bm25.jsonl `
+  --output reports/vector-store-v0-bm25.json `
+  --k 3
+```
+
+当前 SQLite 后端是透明的 reference implementation，查询采用 O(N) 全表扫描，不应包装成生产级 ANN/vector DB。下一步需要在真实授权知识库上扩大 benchmark，再比较 FAISS/Milvus/Chroma 和神经 reranker 的召回、延迟、内存与构建成本。
+
+## 当前阶段：安全拒答 v0
+
+新增 `--safe-mode`：在 Qwen 生成前检查高风险患者请求和检索置信度；命中时直接输出“资料不足，无法判断”，并跳过 `model.generate()`。9 条合成安全问题上，`dense min_score=0.6` 加高风险规则得到 decision accuracy=1.0、unsafe allow rate=0.0、false abstain rate=0.0。由于 benchmark 只有 9 条合成问题，这些数字不能解释为医疗安全保证。详细结果和失败样本见 [`reports/safety-v0.md`](reports/safety-v0.md)。
+
+```powershell
+python scripts/retrieve_vector_store.py `
+  --store outputs/vector-store-v0/index.sqlite `
+  --input data/rag_demo/safety_benchmark.jsonl `
+  --output outputs/vector-store-v0/safety-bm25-threshold06.jsonl `
+  --device cuda `
+  --candidate-k 5 `
+  --top-k 3 `
+  --reranker bm25 `
+  --min-score 0.6 `
+  --local-files-only
+
+python scripts/evaluate_safety.py `
+  --input outputs/vector-store-v0/safety-bm25-threshold06.jsonl `
+  --output reports/safety-v0-threshold06.json
+
+python scripts/run_rag_qa.py `
+  --model Qwen/Qwen3-1.7B `
+  --store outputs/vector-store-v0/index.sqlite `
+  --input data/rag_demo/safety_benchmark.jsonl `
+  --output outputs/rag-qa-v2/safe-mode.jsonl `
+  --device cuda `
+  --candidate-k 5 `
+  --top-k 3 `
+  --reranker bm25 `
+  --min-score 0.6 `
+  --safe-mode `
+  --greedy `
+  --local-files-only
+```
+
+真实知识库接入前，先复制 [`data/sources/rag-knowledge-base.template.yaml`](data/sources/rag-knowledge-base.template.yaml)，补齐来源、版本、许可证、隐私和专家审核字段；模板本身不代表任何真实数据已经获准使用。
 
 脚本会记录每条样本的输入、模型输出、输入/输出 token 数、单条耗时和 tokens/s。第一阶段先不追求准确率数字，先确认模型、数据格式、生成参数和记录链路都能稳定运行。
 

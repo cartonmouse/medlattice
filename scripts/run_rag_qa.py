@@ -16,13 +16,18 @@ sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
 
 from qwen_medical_qa.rag import build_rag_prompt
 from qwen_medical_qa.rag_embedding import DenseRetriever, TransformerTextEncoder
+from qwen_medical_qa.reranker import BM25Reranker
+from qwen_medical_qa.safety import ABSTENTION_ANSWER, assess_question
+from qwen_medical_qa.vector_store import SqliteVectorStore
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model", default="Qwen/Qwen3-1.7B")
     parser.add_argument("--adapter", type=Path)
-    parser.add_argument("--index", type=Path, default=Path("outputs/rag-embedding-v1/index.json"))
+    retrieval_group = parser.add_mutually_exclusive_group()
+    retrieval_group.add_argument("--index", type=Path)
+    retrieval_group.add_argument("--store", type=Path)
     parser.add_argument(
         "--input",
         type=Path,
@@ -31,11 +36,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--device", default="auto")
     parser.add_argument("--embedding-batch-size", type=int, default=8)
+    parser.add_argument("--candidate-k", type=int, default=10)
     parser.add_argument("--top-k", type=int, default=3)
     parser.add_argument("--min-score", type=float)
+    parser.add_argument("--reranker", choices=("none", "bm25"), default="none")
     parser.add_argument("--max-new-tokens", type=int, default=64)
     parser.add_argument("--max-input-tokens", type=int, default=2048)
     parser.add_argument("--thinking", action="store_true")
+    parser.add_argument(
+        "--safe-mode",
+        action="store_true",
+        help="abstain on high-risk intent or missing retrieval context before generation",
+    )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--greedy", action="store_true")
     parser.add_argument("--local-files-only", action="store_true")
@@ -79,8 +91,10 @@ def apply_chat_template(tokenizer: Any, prompt: str, thinking: bool) -> str:
 
 def main() -> None:
     args = parse_args()
-    if args.top_k <= 0 or args.max_new_tokens <= 0:
-        raise ValueError("top-k and max-new-tokens must be positive")
+    if args.top_k <= 0 or args.max_new_tokens <= 0 or args.candidate_k <= 0:
+        raise ValueError("candidate-k, top-k and max-new-tokens must be positive")
+    if args.candidate_k < args.top_k:
+        raise ValueError("candidate-k must be greater than or equal to top-k")
 
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -90,46 +104,112 @@ def main() -> None:
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(args.seed)
 
-    retriever = DenseRetriever.load(args.index)
+    index_path = args.index or Path("outputs/rag-embedding-v1/index.json")
+    store = SqliteVectorStore(args.store) if args.store else None
+    retriever = None if store else DenseRetriever.load(index_path)
+    model_name = store.model_name if store else retriever.model_name
+    query_instruction = store.query_instruction if store else retriever.query_instruction
+    max_length = store.max_length if store else retriever.max_length
     rows = read_queries(args.input)
     encoder = TransformerTextEncoder(
-        model_name=retriever.model_name,
+        model_name=model_name,
         device=args.device,
-        max_length=retriever.max_length,
+        max_length=max_length,
         batch_size=args.embedding_batch_size,
-        query_instruction=retriever.query_instruction,
+        query_instruction=query_instruction,
         local_files_only=args.local_files_only,
     )
     query_embeddings = encoder.encode([row["question"] for row in rows], is_query=True)
-    retrieval_results = [
-        retriever.search(embedding, top_k=args.top_k, min_score=args.min_score)
-        for embedding in query_embeddings
-    ]
+    reranker = BM25Reranker() if args.reranker == "bm25" else None
+    retrieval_results = []
+    for embedding, row in zip(query_embeddings, rows):
+        if store:
+            candidates = store.search(
+                embedding,
+                top_k=args.candidate_k if reranker else args.top_k,
+                min_score=args.min_score,
+            )
+        else:
+            candidates = retriever.search(
+                embedding,
+                top_k=args.candidate_k if reranker else args.top_k,
+                min_score=args.min_score,
+            )
+        results = (
+            reranker.rerank(row["question"], candidates, top_k=args.top_k)
+            if reranker
+            else candidates
+        )
+        retrieval_results.append(results)
     del encoder
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
 
-    tokenizer = AutoTokenizer.from_pretrained(
-        args.model,
-        local_files_only=args.local_files_only,
+    safety_decisions = [
+        assess_question(row["question"], results) if args.safe_mode else None
+        for row, results in zip(rows, retrieval_results)
+    ]
+    needs_generation = not args.safe_mode or any(
+        decision is None or not decision.abstain for decision in safety_decisions
     )
-    model = AutoModelForCausalLM.from_pretrained(
-        args.model,
-        torch_dtype="auto",
-        device_map="auto",
-        local_files_only=args.local_files_only,
-    )
-    if args.adapter:
-        from peft import PeftModel
+    tokenizer = None
+    model = None
+    if needs_generation:
+        tokenizer = AutoTokenizer.from_pretrained(
+            args.model,
+            local_files_only=args.local_files_only,
+        )
+        model = AutoModelForCausalLM.from_pretrained(
+            args.model,
+            torch_dtype="auto",
+            device_map="auto",
+            local_files_only=args.local_files_only,
+        )
+        if args.adapter:
+            from peft import PeftModel
 
-        model = PeftModel.from_pretrained(model, str(args.adapter))
-    model.eval()
+            model = PeftModel.from_pretrained(model, str(args.adapter))
+        model.eval()
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     run_started = datetime.now(timezone.utc).isoformat()
     with args.output.open("w", encoding="utf-8") as handle:
-        for row, results in zip(rows, retrieval_results):
+        for row, results, safety_decision in zip(rows, retrieval_results, safety_decisions):
             rag_prompt = build_rag_prompt(row["question"], results)
+            if safety_decision is not None and safety_decision.abstain:
+                result = {
+                    "id": row["id"],
+                    "question": row["question"],
+                    "expected_answer": row.get("expected_answer"),
+                    "expected_abstain": row.get("expected_abstain"),
+                    "relevant_doc_ids": row.get("relevant_doc_ids", []),
+                    "model": args.model,
+                    "adapter": str(args.adapter) if args.adapter else None,
+                    "thinking": args.thinking,
+                    "safe_mode": True,
+                    "retriever": "sqlite-dense" if store else "dense-cosine",
+                    "reranker": args.reranker,
+                    "embedding_model": model_name,
+                    "retrieved": [result.to_dict() for result in results],
+                    "retrieval_abstained": not bool(results),
+                    "prompt": rag_prompt,
+                    "answer": ABSTENTION_ANSWER,
+                    "prompt_tokens": 0,
+                    "output_tokens": 0,
+                    "latency_ms": 0.0,
+                    "tokens_per_second": None,
+                    "peak_cuda_allocated_mb": None,
+                    "peak_cuda_reserved_mb": None,
+                    "generation_skipped": True,
+                    "safety": safety_decision.to_dict(),
+                    "run_started_utc": run_started,
+                }
+                handle.write(json.dumps(result, ensure_ascii=False) + "\n")
+                print(f"{row['id']}: abstained, answer={ABSTENTION_ANSWER!r}")
+                continue
+
+            if tokenizer is None or model is None:
+                raise RuntimeError("generation model was not loaded for an answerable row")
             prompt_text = apply_chat_template(tokenizer, rag_prompt, args.thinking)
             inputs = tokenizer(
                 [prompt_text],
@@ -167,13 +247,17 @@ def main() -> None:
                 "id": row["id"],
                 "question": row["question"],
                 "expected_answer": row.get("expected_answer"),
+                "expected_abstain": row.get("expected_abstain"),
                 "relevant_doc_ids": row.get("relevant_doc_ids", []),
                 "model": args.model,
                 "adapter": str(args.adapter) if args.adapter else None,
                 "thinking": args.thinking,
-                "retriever": "dense-cosine",
-                "embedding_model": retriever.model_name,
+                "safe_mode": args.safe_mode,
+                "retriever": "sqlite-dense" if store else "dense-cosine",
+                "reranker": args.reranker,
+                "embedding_model": model_name,
                 "retrieved": [result.to_dict() for result in results],
+                "retrieval_abstained": not bool(results),
                 "prompt": rag_prompt,
                 "answer": answer,
                 "prompt_tokens": int(input_length),
@@ -182,8 +266,11 @@ def main() -> None:
                 "tokens_per_second": round(int(output_ids.shape[-1]) / elapsed, 2) if elapsed else None,
                 "peak_cuda_allocated_mb": peak_allocated,
                 "peak_cuda_reserved_mb": peak_reserved,
+                "generation_skipped": False,
                 "run_started_utc": run_started,
             }
+            if safety_decision is not None:
+                result["safety"] = safety_decision.to_dict()
             handle.write(json.dumps(result, ensure_ascii=False) + "\n")
             print(f"{row['id']}: {result['latency_ms']} ms, answer={answer!r}")
 

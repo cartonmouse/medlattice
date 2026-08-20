@@ -1,0 +1,81 @@
+{
+  "task": "rag_retrieval",
+  "total": 5,
+  "k": 3,
+  "hit_at_1": 1.0,
+  "hit_rate_at_k": 1.0,
+  "mrr_at_k": 1.0,
+  "details": [
+    {
+      "id": "rag-demo-001",
+      "question": "患者自己感觉到的异常表现属于什么术语？",
+      "relevant_doc_ids": [
+        "term-symptom"
+      ],
+      "retrieved_doc_ids": [
+        "term-symptom",
+        "term-differential",
+        "term-sign"
+      ],
+      "first_relevant_rank": 1,
+      "hit_at_k": true
+    },
+    {
+      "id": "rag-demo-002",
+      "question": "通过观察或检查发现的客观表现叫什么？",
+      "relevant_doc_ids": [
+        "term-sign"
+      ],
+      "retrieved_doc_ids": [
+        "term-sign",
+        "term-differential",
+        "term-symptom"
+      ],
+      "first_relevant_rank": 1,
+      "hit_at_k": true
+    },
+    {
+      "id": "rag-demo-003",
+      "question": "什么情况表示不宜采用某种治疗或检查？",
+      "relevant_doc_ids": [
+        "term-contraindication"
+      ],
+      "retrieved_doc_ids": [
+        "term-contraindication",
+        "term-differential",
+        "term-symptom"
+      ],
+      "first_relevant_rank": 1,
+      "hit_at_k": true
+    },
+    {
+      "id": "rag-demo-004",
+      "question": "区分多个可能疾病的诊断过程叫什么？",
+      "relevant_doc_ids": [
+        "term-differential"
+      ],
+      "retrieved_doc_ids": [
+        "term-differential",
+        "term-prognosis",
+        "term-symptom"
+      ],
+      "first_relevant_rank": 1,
+      "hit_at_k": true
+    },
+    {
+      "id": "rag-demo-005",
+      "question": "描述疾病可能发展和结局的术语是什么？",
+      "relevant_doc_ids": [
+        "term-prognosis"
+      ],
+      "retrieved_doc_ids": [
+        "term-prognosis",
+        "term-differential",
+        "term-symptom"
+      ],
+      "first_relevant_rank": 1,
+      "hit_at_k": true
+    }
+  ],
+  "retrieval_file": "outputs\\vector-store-v0\\dense.jsonl"
+}

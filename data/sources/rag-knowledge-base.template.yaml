@@ -1,0 +1,42 @@
+# Copy this file to a versioned manifest only after a real source is selected.
+# Do not put raw medical documents, patient data, or credentials in this file.
+knowledge_base_id: replace-with-project-id
+status: pending-license-review
+language: zh
+domain: replace-with-domain
+
+source:
+  title: replace-with-source-title
+  publisher: replace-with-publisher
+  url: https://replace-with-canonical-source-url
+  version: replace-with-version-or-release-date
+  accessed_at: YYYY-MM-DD
+  declared_license: replace-with-license
+  license_url: https://replace-with-license-url
+  redistribution_allowed: false
+  attribution_required: true
+
+content_boundary:
+  document_count: 0
+  includes_patient_data: false
+  deidentification_status: not-applicable-or-reviewed
+  expert_review_status: pending
+  allowed_use: research-and-interview-demo-only
+
+processing:
+  source_revision: replace-with-commit-or-checksum
+  normalization: pending
+  deduplication: pending
+  chunk_size: 160
+  chunk_overlap: 32
+  embedding_model: BAAI/bge-small-zh-v1.5
+  index_backend: pending
+
+review:
+  provenance_checked_by: pending
+  license_checked_by: pending
+  safety_review_by: pending
+  review_date: pending
+  notes: >-
+    Do not build or publish a real knowledge index until provenance, license,
+    privacy, redistribution, and expert-review fields are complete.

@@ -1,0 +1,107 @@
+{
+  "task": "rag_answer_grounding_demo",
+  "total": 5,
+  "k": 3,
+  "retrieval_hit_rate_at_k": 1.0,
+  "answer_contains_expected_rate": 1.0,
+  "valid_citation_rate": 1.0,
+  "grounded_answer_rate": 1.0,
+  "details": [
+    {
+      "id": "rag-demo-001",
+      "question": "患者自己感觉到的异常表现属于什么术语？",
+      "expected_answer": "症状",
+      "answer": "患者自己感觉到的异常表现属于症状。\n\n使用引用编号：[term-symptom#chunk-000]",
+      "retrieved_doc_ids": [
+        "term-symptom",
+        "term-sign",
+        "term-prognosis"
+      ],
+      "first_relevant_rank": 1,
+      "retrieval_hit_at_k": true,
+      "citation_ids": [
+        "term-symptom#chunk-000"
+      ],
+      "valid_citation": true,
+      "answer_contains_expected": true,
+      "grounded_answer": true
+    },
+    {
+      "id": "rag-demo-002",
+      "question": "通过观察或检查发现的客观表现叫什么？",
+      "expected_answer": "体征",
+      "answer": "通过观察或检查发现的客观表现叫体征。\n\n使用的引用编号：[term-sign#chunk-000]",
+      "retrieved_doc_ids": [
+        "term-sign",
+        "term-symptom",
+        "term-prognosis"
+      ],
+      "first_relevant_rank": 1,
+      "retrieval_hit_at_k": true,
+      "citation_ids": [
+        "term-sign#chunk-000"
+      ],
+      "valid_citation": true,
+      "answer_contains_expected": true,
+      "grounded_answer": true
+    },
+    {
+      "id": "rag-demo-003",
+      "question": "什么情况表示不宜采用某种治疗或检查？",
+      "expected_answer": "禁忌证",
+      "answer": "禁忌证表示不宜采用某种检查、操作或治疗的情况。\n\n使用的引用编号：[term-contraindication#chunk-000]",
+      "retrieved_doc_ids": [
+        "term-contraindication",
+        "term-sign",
+        "term-symptom"
+      ],
+      "first_relevant_rank": 1,
+      "retrieval_hit_at_k": true,
+      "citation_ids": [
+        "term-contraindication#chunk-000"
+      ],
+      "valid_citation": true,
+      "answer_contains_expected": true,
+      "grounded_answer": true
+    },
+    {
+      "id": "rag-demo-004",
+      "question": "区分多个可能疾病的诊断过程叫什么？",
+      "expected_answer": "鉴别诊断",
+      "answer": "区分多个可能疾病的诊断过程叫鉴别诊断。\n\n使用的引用编号：[term-differential#chunk-000]",
+      "retrieved_doc_ids": [
+        "term-differential",
+        "term-prognosis",
+        "term-sign"
+      ],
+      "first_relevant_rank": 1,
+      "retrieval_hit_at_k": true,
+      "citation_ids": [
+        "term-differential#chunk-000"
+      ],
+      "valid_citation": true,
+      "answer_contains_expected": true,
+      "grounded_answer": true
+    },
+    {
+      "id": "rag-demo-005",
+      "question": "描述疾病可能发展和结局的术语是什么？",
+      "expected_answer": "预后",
+      "answer": "疾病可能发展和结局的术语是“预后”。\n\n使用的引用编号：[term-prognosis#chunk-000]",
+      "retrieved_doc_ids": [
+        "term-prognosis",
+        "term-differential",
+        "term-contraindication"
+      ],
+      "first_relevant_rank": 1,
+      "retrieval_hit_at_k": true,
+      "citation_ids": [
+        "term-prognosis#chunk-000"
+      ],
+      "valid_citation": true,
+      "answer_contains_expected": true,
+      "grounded_answer": true
+    }
+  ],
+  "answer_file": "outputs\\rag-qa-v2\\sqlite-bm25-base.jsonl"
+}
