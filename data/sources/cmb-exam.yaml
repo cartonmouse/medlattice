@@ -1,0 +1,32 @@
+dataset_id: FreedomIntelligence/CMB
+config: CMB-Exam
+upstream:
+  huggingface: https://huggingface.co/datasets/FreedomIntelligence/CMB
+  github: https://github.com/FreedomIntelligence/CMB
+declared_license: Apache-2.0
+language: zh
+task: Chinese medical multiple-choice question answering
+official_split_sizes:
+  train: 269359
+  val: 280
+  test: 11200
+observed_label_availability:
+  train: answer
+  val: answer_and_explanation
+  test: no_public_answer
+observed_upstream_revision: 935fbc09edf1303d89872b21265ff597f426ac0d
+observed_upstream_last_modified: 2024-04-05T16:10:47Z
+project_policy:
+  raw_data_committed_to_github: false
+  first_train_limit: 5000
+  first_val_limit: 280
+  first_test_limit: 1000
+  sampling_seed: 42
+  single_choice_only: true
+  note: >-
+    The license field follows the upstream dataset card. Before commercial use
+    or redistribution, re-check upstream provenance and terms for the underlying
+    exam questions. Keep attribution and citation in experiment reports.
+citation: >-
+  Wang et al. CMB: A Comprehensive Medical Benchmark in Chinese, 2023.
+  https://arxiv.org/abs/2308.08833

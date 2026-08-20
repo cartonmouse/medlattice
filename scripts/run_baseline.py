@@ -5,17 +5,25 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 
+sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
+
+from qwen_medical_qa.prompting import build_messages
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model", default="Qwen/Qwen3-1.7B")
+    parser.add_argument("--adapter", type=Path)
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--limit", type=int)
     parser.add_argument("--max-new-tokens", type=int, default=128)
     parser.add_argument("--max-input-tokens", type=int, default=2048)
     parser.add_argument("--thinking", action="store_true")
@@ -44,30 +52,8 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
     return records
 
 
-def format_user_prompt(record: dict[str, Any]) -> str:
-    question = record["question"]
-    choices = record.get("choices")
-    if not choices:
-        return question
-
-    if not isinstance(choices, dict):
-        raise ValueError(f"choices must be an object for record {record['id']}")
-    options = "\n".join(f"{key}. {value}" for key, value in choices.items())
-    return (
-        f"{question}\n\n"
-        f"选项：\n{options}\n\n"
-        "这是一个教育性医学术语选择题。请只输出一个选项字母，不要输出解释。"
-    )
-
-
 def apply_chat_template(tokenizer: Any, record: dict[str, Any], thinking: bool) -> str:
-    messages = [
-        {
-            "role": "system",
-            "content": "你是一个用于研究评测的中文医疗问答模型。回答仅供学习演示，不构成医疗建议。",
-        },
-        {"role": "user", "content": format_user_prompt(record)},
-    ]
+    messages = build_messages(record)
     try:
         return tokenizer.apply_chat_template(
             messages,
@@ -97,12 +83,20 @@ def main() -> None:
         torch.cuda.manual_seed_all(args.seed)
 
     records = load_jsonl(args.input)
+    if args.limit is not None:
+        if args.limit <= 0:
+            raise ValueError("--limit must be positive")
+        records = records[: args.limit]
     tokenizer = AutoTokenizer.from_pretrained(args.model)
     model = AutoModelForCausalLM.from_pretrained(
         args.model,
         torch_dtype="auto",
         device_map="auto",
     )
+    if args.adapter:
+        from peft import PeftModel
+
+        model = PeftModel.from_pretrained(model, str(args.adapter))
     model.eval()
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -157,6 +151,7 @@ def main() -> None:
                 "choices": record.get("choices"),
                 "reference_answer": record.get("reference_answer"),
                 "model": args.model,
+                "adapter": str(args.adapter) if args.adapter else None,
                 "thinking": args.thinking,
                 "seed": args.seed,
                 "prompt_tokens": int(input_length),

@@ -1,0 +1,69 @@
+{
+  "task": "multiple_choice_exact_letter",
+  "total": 8,
+  "correct": 7,
+  "invalid": 0,
+  "accuracy": 0.875,
+  "invalid_rate": 0.0,
+  "details": [
+    {
+      "id": "cmb-exam-val-1",
+      "predicted": "D",
+      "reference": "C",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-2",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-3",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-4",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-6",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-7",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-9",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-11",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    }
+  ],
+  "model": "Qwen/Qwen3-1.7B",
+  "thinking": false,
+  "prediction_file": "outputs\\qlora-cmb-smoke-val.jsonl"
+}

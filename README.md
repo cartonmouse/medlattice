@@ -17,7 +17,9 @@
 - [x] 添加最小数据格式测试
 - [x] 添加 v0 选择题 benchmark 和自动评测器
 - [x] 在本机 RTX 4060 Laptop 8GB 上完成基线运行
-- [ ] 完成公开数据集的来源、许可证和划分记录
+- [x] 添加 CMB-Exam 数据准备脚本和来源记录
+- [x] 完成 CMB-Exam v1 的清洗、固定子集和 SHA-256 报告
+- [x] 完成 SFT messages 格式和 QLoRA smoke 链路
 - [ ] 完成 QLoRA、RAG、DPO 和服务化实验
 
 ## 项目结构
@@ -30,7 +32,8 @@ qwen-medical-qa/
 ├── scripts/
 │   ├── check_environment.py   # 检查 Python、PyTorch、CUDA 和显存
 │   ├── run_baseline.py        # 基线推理与延迟记录
-│   └── summarize_baseline.py  # 汇总延迟、吞吐和显存
+│   ├── summarize_baseline.py  # 汇总延迟、吞吐和显存
+│   └── prepare_cmb.py         # 下载、清洗并固定 CMB-Exam 数据子集
 ├── src/qwen_medical_qa/      # 后续抽取可复用模块
 ├── tests/                    # 自动化测试
 ├── reports/                  # 可提交的实验报告和环境记录
@@ -74,6 +77,46 @@ python scripts/evaluate_benchmark.py `
 ```
 
 这里的 accuracy 只表示选项字母是否匹配参考答案；它不能替代领域专家评审，也不能直接解释为医疗准确率。
+
+## 下一阶段：CMB-Exam 数据准备
+
+当前正式数据候选为 [FreedomIntelligence/CMB 的 `CMB-Exam` 配置](https://huggingface.co/datasets/FreedomIntelligence/CMB)。数据来源、许可证声明、版本记录和处理策略见 [`data/sources/cmb-exam.yaml`](data/sources/cmb-exam.yaml)。原始数据和 `data/processed/` 下的处理结果不提交到 GitHub。
+
+先安装数据处理依赖，再生成固定的小规模训练/验证/测试子集：
+
+```powershell
+python -m pip install -r requirements-data.txt
+
+python scripts/prepare_cmb.py `
+  --output-dir data/processed/cmb-exam-v1 `
+  --train-limit 5000 `
+  --val-limit 280 `
+  --test-limit 1000 `
+  --seed 42
+```
+
+第一版只保留单项选择题，先验证“下载 -> 规范化 -> 过滤 -> 固定子集 -> SHA-256 记录”的数据工程链路；多项选择题留到评测口径明确后再接入。当前上游 test split 不公开答案，因此 `val` 用于有标签评测，`test` 只作为无标签推理/格式检查数据，不能据此报告 accuracy。
+
+## 下一阶段：SFT/QLoRA
+
+SFT 数据使用与基线相同的 prompt 模板，输出 Qwen `messages` 格式；当前 assistant target 只保留参考答案字母，以便和 exact-match evaluator 对齐。QLoRA 配置见 [`configs/qlora.yaml`](configs/qlora.yaml)，训练脚本见 [`scripts/train_qlora.py`](scripts/train_qlora.py)。
+
+```powershell
+python -m pip install -r requirements-qlora.txt
+python scripts/prepare_sft.py
+
+# 先做 8 条样本 smoke training
+python scripts/train_qlora.py `
+  --config configs/qlora.yaml `
+  --output-dir outputs/qlora-cmb-smoke `
+  --max-train-samples 8 `
+  --max-eval-samples 8
+
+# 正式训练前去掉两个 --max-* 参数，并使用独立输出目录
+python scripts/train_qlora.py --config configs/qlora.yaml
+```
+
+smoke 结果见 [`reports/qlora-smoke.md`](reports/qlora-smoke.md)。它只证明训练链路和 adapter 加载可用，不代表正式准确率提升。
 
 脚本会记录每条样本的输入、模型输出、输入/输出 token 数、单条耗时和 tokens/s。第一阶段先不追求准确率数字，先确认模型、数据格式、生成参数和记录链路都能稳定运行。
 

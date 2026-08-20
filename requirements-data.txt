@@ -1,0 +1,3 @@
+# Data preparation dependencies. Install after the baseline environment.
+# Pinned to the version used for the reproducible CMB-Exam v1 run.
+datasets==5.0.1

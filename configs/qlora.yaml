@@ -1,0 +1,38 @@
+model_name: Qwen/Qwen3-1.7B
+train_file: data/processed/cmb-exam-v1/sft_train.jsonl
+validation_file: data/processed/cmb-exam-v1/sft_val.jsonl
+output_dir: outputs/qlora-cmb-v1
+seed: 42
+max_seq_length: 1024
+num_train_epochs: 1
+per_device_train_batch_size: 1
+per_device_eval_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 0.0002
+optim: paged_adamw_8bit
+warmup_ratio: 0.03
+logging_steps: 10
+save_steps: 100
+eval_steps: 100
+save_total_limit: 2
+gradient_checkpointing: true
+fp16: true
+bf16: false
+report_to: none
+quantization:
+  load_in_4bit: true
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_compute_dtype: float16
+  bnb_4bit_use_double_quant: true
+lora:
+  r: 8
+  alpha: 16
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj

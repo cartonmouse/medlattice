@@ -62,3 +62,24 @@
 - 为什么 12 条样例 100% 不能写成“医疗准确率 100%”？
 - 正式数据集接入后，如何说明来源、许可证、数据泄漏和测试集划分？
 - 如果 QLoRA 后分数下降，如何区分数据问题、训练问题和评测问题？
+
+## 阶段 B：CMB-Exam 数据工程
+
+面试时需要能回答：
+
+- 为什么选择 CMB-Exam，而不是来源和许可证不明确的在线问答网页？
+- 训练、验证、测试集分别如何使用？为什么训练时不能读取测试集？
+- 如果 test split 没有公开答案，为什么不能报告 test accuracy？如何用 val 做有标签评测？
+- 为什么第一版只保留单项选择题？多项选择题的答案规范化和评测口径有什么不同？
+- 固定随机种子和 SHA-256 元数据如何让别人复现同一批本地处理结果？
+- 为什么不把原始数据放进 GitHub？别人如何根据来源记录重新下载？
+
+## 阶段 C：SFT/QLoRA
+
+面试时需要能回答：
+
+- 为什么训练和基线必须复用同一套 prompt 模板？
+- 为什么 assistant-only loss 要屏蔽 system/user token？如果不屏蔽会有什么影响？
+- 4-bit NF4、LoRA rank、alpha、dropout 和 target modules 分别解决什么问题？
+- 为什么 8 条样本 smoke training 的 87.5% 不能写成正式微调效果？正式对比如何控制变量？
+- 如果 8GB 显存 OOM，优先调整 sequence length、batch size、gradient accumulation 还是 LoRA rank？为什么？
