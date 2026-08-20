@@ -20,7 +20,8 @@
 - [x] 添加 CMB-Exam 数据准备脚本和来源记录
 - [x] 完成 CMB-Exam v1 的清洗、固定子集和 SHA-256 报告
 - [x] 完成 SFT messages 格式和 QLoRA smoke 链路
-- [ ] 完成 QLoRA、RAG、DPO 和服务化实验
+- [x] 完成 CMB-Exam v1 的正式 QLoRA 训练和基线对照评测
+- [ ] 完成 RAG、DPO 和服务化实验
 
 ## 项目结构
 
@@ -117,6 +118,8 @@ python scripts/train_qlora.py --config configs/qlora.yaml
 ```
 
 smoke 结果见 [`reports/qlora-smoke.md`](reports/qlora-smoke.md)。它只证明训练链路和 adapter 加载可用，不代表正式准确率提升。
+
+正式训练使用 5,000 条 train、240 条 val，在本机 RTX 4060 Laptop 8GB 上完成 1 epoch QLoRA。基础模型在 val 上为 44.58%，QLoRA adapter 为 50.42%，详细配置、逐题迁移统计和复现命令见 [`reports/qlora-full.md`](reports/qlora-full.md)。这里的指标仍然只是 CMB-Exam 单项选择题的答案字母 exact-match，不能解释为医疗准确率。
 
 脚本会记录每条样本的输入、模型输出、输入/输出 token 数、单条耗时和 tokens/s。第一阶段先不追求准确率数字，先确认模型、数据格式、生成参数和记录链路都能稳定运行。
 
