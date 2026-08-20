@@ -16,7 +16,8 @@ sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
 
 from qwen_medical_qa.rag import build_rag_prompt
 from qwen_medical_qa.rag_embedding import DenseRetriever, TransformerTextEncoder
-from qwen_medical_qa.reranker import BM25Reranker
+from qwen_medical_qa.neural_reranker import TransformerCrossEncoderReranker
+from qwen_medical_qa.reranker import BM25Reranker, describe_reranker
 from qwen_medical_qa.safety import ABSTENTION_ANSWER, assess_question
 from qwen_medical_qa.vector_store import SqliteVectorStore
 
@@ -39,7 +40,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--candidate-k", type=int, default=10)
     parser.add_argument("--top-k", type=int, default=3)
     parser.add_argument("--min-score", type=float)
-    parser.add_argument("--reranker", choices=("none", "bm25"), default="none")
+    parser.add_argument("--reranker", choices=("none", "bm25", "neural"), default="none")
+    parser.add_argument(
+        "--reranker-model",
+        default=TransformerCrossEncoderReranker.DEFAULT_MODEL_NAME,
+    )
+    parser.add_argument("--reranker-device", default="auto")
+    parser.add_argument("--reranker-batch-size", type=int, default=8)
+    parser.add_argument("--reranker-max-length", type=int, default=512)
     parser.add_argument("--max-new-tokens", type=int, default=64)
     parser.add_argument("--max-input-tokens", type=int, default=2048)
     parser.add_argument("--thinking", action="store_true")
@@ -120,8 +128,24 @@ def main() -> None:
         local_files_only=args.local_files_only,
     )
     query_embeddings = encoder.encode([row["question"] for row in rows], is_query=True)
-    reranker = BM25Reranker() if args.reranker == "bm25" else None
+    del encoder
+    if args.reranker == "neural" and torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    if args.reranker == "bm25":
+        reranker = BM25Reranker()
+    elif args.reranker == "neural":
+        reranker = TransformerCrossEncoderReranker(
+            model_name=args.reranker_model,
+            device=args.reranker_device,
+            batch_size=args.reranker_batch_size,
+            max_length=args.reranker_max_length,
+            local_files_only=args.local_files_only,
+        )
+    else:
+        reranker = None
+    reranker_metadata = describe_reranker(reranker)
     retrieval_results = []
+    reranker_latencies = []
     for embedding, row in zip(query_embeddings, rows):
         if store:
             candidates = store.search(
@@ -135,13 +159,15 @@ def main() -> None:
                 top_k=args.candidate_k if reranker else args.top_k,
                 min_score=args.min_score,
             )
-        results = (
-            reranker.rerank(row["question"], candidates, top_k=args.top_k)
-            if reranker
-            else candidates
-        )
+        if reranker:
+            started = time.perf_counter()
+            results = reranker.rerank(row["question"], candidates, top_k=args.top_k)
+            reranker_latencies.append(round((time.perf_counter() - started) * 1000, 2))
+        else:
+            results = candidates
+            reranker_latencies.append(None)
         retrieval_results.append(results)
-    del encoder
+    del reranker
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
 
@@ -174,7 +200,12 @@ def main() -> None:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     run_started = datetime.now(timezone.utc).isoformat()
     with args.output.open("w", encoding="utf-8") as handle:
-        for row, results, safety_decision in zip(rows, retrieval_results, safety_decisions):
+        for row, results, safety_decision, reranker_latency_ms in zip(
+            rows,
+            retrieval_results,
+            safety_decisions,
+            reranker_latencies,
+        ):
             rag_prompt = build_rag_prompt(row["question"], results)
             if safety_decision is not None and safety_decision.abstain:
                 result = {
@@ -189,6 +220,8 @@ def main() -> None:
                     "safe_mode": True,
                     "retriever": "sqlite-dense" if store else "dense-cosine",
                     "reranker": args.reranker,
+                    **reranker_metadata,
+                    "reranker_latency_ms": reranker_latency_ms,
                     "embedding_model": model_name,
                     "retrieved": [result.to_dict() for result in results],
                     "retrieval_abstained": not bool(results),
@@ -255,6 +288,8 @@ def main() -> None:
                 "safe_mode": args.safe_mode,
                 "retriever": "sqlite-dense" if store else "dense-cosine",
                 "reranker": args.reranker,
+                **reranker_metadata,
+                "reranker_latency_ms": reranker_latency_ms,
                 "embedding_model": model_name,
                 "retrieved": [result.to_dict() for result in results],
                 "retrieval_abstained": not bool(results),

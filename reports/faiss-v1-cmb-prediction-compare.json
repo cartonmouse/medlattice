@@ -1,0 +1,13 @@
+{
+  "left_file": "outputs\\cmb-rag-v1\\rag-deterministic-val.jsonl",
+  "right_file": "outputs\\cmb-rag-v1\\rag-faiss-bm25-deterministic-val.jsonl",
+  "total": 240,
+  "same_prediction": 240,
+  "different_prediction": 0,
+  "left_invalid": 0,
+  "right_invalid": 0,
+  "both_correct": 115,
+  "both_wrong": 125,
+  "left_correct_right_wrong": 0,
+  "left_wrong_right_correct": 0
+}

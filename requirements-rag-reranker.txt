@@ -1,0 +1,4 @@
+# Optional Transformer Cross-Encoder reranker.
+# Install requirements-baseline.txt first; this stage reuses its torch and
+# transformers dependencies and does not add a mandatory Python package.
+# Model weights are downloaded separately from the configured Hugging Face repo.

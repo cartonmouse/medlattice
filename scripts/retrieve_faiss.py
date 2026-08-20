@@ -1,4 +1,4 @@
-"""Retrieve and optionally BM25-rerank candidates from a SQLite vector store."""
+"""Retrieve and optionally BM25-rerank candidates from a FAISS HNSW index."""
 
 from __future__ import annotations
 
@@ -12,22 +12,34 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
 
+from qwen_medical_qa.faiss_store import FaissVectorStore
+from qwen_medical_qa.neural_reranker import TransformerCrossEncoderReranker
 from qwen_medical_qa.rag import build_rag_prompt
 from qwen_medical_qa.rag_embedding import TransformerTextEncoder
-from qwen_medical_qa.neural_reranker import TransformerCrossEncoderReranker
 from qwen_medical_qa.reranker import BM25Reranker, describe_reranker
-from qwen_medical_qa.vector_store import SqliteVectorStore
 
 
-def parse_args() -> argparse.Namespace:
+def read_queries(path: Path) -> list[dict[str, Any]]:
+    rows = [
+        json.loads(line)
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    if not rows:
+        raise ValueError(f"no queries found in {path}")
+    for row in rows:
+        row["id"] = str(row.get("id") or "").strip()
+        row["question"] = str(row.get("question") or "").strip()
+        if not row["id"] or not row["question"]:
+            raise ValueError("each query needs id and question")
+    return rows
+
+
+def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--store", type=Path, default=Path("outputs/vector-store-v0/index.sqlite"))
-    parser.add_argument(
-        "--input",
-        type=Path,
-        default=Path("data/rag_demo/retrieval_benchmark.jsonl"),
-    )
-    parser.add_argument("--output", type=Path, default=Path("outputs/vector-store-v0/retrieval.jsonl"))
+    parser.add_argument("--index", type=Path, default=Path("outputs/faiss-v1/index.faiss"))
+    parser.add_argument("--input", type=Path, default=Path("data/rag_demo/retrieval_benchmark.jsonl"))
+    parser.add_argument("--output", type=Path, default=Path("outputs/faiss-v1/retrieval.jsonl"))
     parser.add_argument("--device", default="auto")
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--candidate-k", type=int, default=10)
@@ -42,32 +54,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--reranker-batch-size", type=int, default=8)
     parser.add_argument("--reranker-max-length", type=int, default=512)
     parser.add_argument("--local-files-only", action="store_true")
-    return parser.parse_args()
-
-
-def read_queries(path: Path) -> list[dict[str, Any]]:
-    rows = []
-    for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-        if not line.strip():
-            continue
-        row = json.loads(line)
-        query_id = str(row.get("id") or "").strip()
-        question = str(row.get("question") or "").strip()
-        if not query_id or not question:
-            raise ValueError(f"query at line {line_number} needs id and question")
-        row["id"] = query_id
-        row["question"] = question
-        rows.append(row)
-    if not rows:
-        raise ValueError(f"no queries found in {path}")
-    return rows
-
-
-def main() -> None:
-    args = parse_args()
+    args = parser.parse_args()
     if args.candidate_k < args.top_k:
         raise ValueError("candidate-k must be greater than or equal to top-k")
-    store = SqliteVectorStore(args.store)
+
+    store = FaissVectorStore(args.index)
     rows = read_queries(args.input)
     encoder = TransformerTextEncoder(
         model_name=store.model_name,
@@ -117,7 +108,7 @@ def main() -> None:
                 "relevant_doc_ids": row.get("relevant_doc_ids", []),
                 "expected_answer": row.get("expected_answer"),
                 "expected_abstain": row.get("expected_abstain"),
-                "retriever": "sqlite-dense",
+                "retriever": "faiss-hnsw",
                 "reranker": args.reranker,
                 **describe_reranker(reranker),
                 "reranker_latency_ms": reranker_latency_ms,
@@ -138,7 +129,7 @@ def main() -> None:
         json.dumps(
             {
                 "queries": len(output_rows),
-                "backend": "sqlite-dense",
+                "backend": "faiss-hnsw",
                 "reranker": args.reranker,
                 **describe_reranker(reranker),
                 "output": str(args.output),

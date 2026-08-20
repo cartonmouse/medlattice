@@ -1,0 +1,2 @@
+# Optional CPU FAISS HNSW backend. Keep SQLite as the dependency-free reference.
+faiss-cpu==1.14.3

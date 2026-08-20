@@ -1,0 +1,11 @@
+{
+  "left_file": "outputs\\cmb-rag-v1\\retrieval.jsonl",
+  "right_file": "outputs\\cmb-rag-v1\\retrieval-faiss-bm25.jsonl",
+  "total": 240,
+  "top_k": 3,
+  "exact_ranking_match": 239,
+  "exact_set_match": 239,
+  "mean_set_overlap": 0.997222,
+  "left_backend": "sqlite-dense",
+  "right_backend": "faiss-hnsw"
+}

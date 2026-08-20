@@ -4,11 +4,17 @@ from __future__ import annotations
 
 import argparse
 import json
-import random
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+import sys
+
+
+sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
+
+from qwen_medical_qa.reproducibility import configure_reproducibility
 
 
 def parse_args() -> argparse.Namespace:
@@ -23,6 +29,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--thinking", action="store_true")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--greedy", action="store_true")
+    parser.add_argument(
+        "--deterministic",
+        action="store_true",
+        help="request deterministic torch/CUDA algorithms and record the setting",
+    )
     parser.add_argument("--local-files-only", action="store_true")
     return parser.parse_args()
 
@@ -82,13 +93,9 @@ def main() -> None:
     if args.limit is not None and args.limit <= 0:
         raise ValueError("limit must be positive")
 
+    reproducibility = configure_reproducibility(args.seed, args.deterministic)
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
-
-    random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(args.seed)
 
     rows = read_jsonl(args.input)
     retrieval_rows = read_jsonl(args.retrieval)
@@ -163,6 +170,7 @@ def main() -> None:
                 "adapter": None,
                 "thinking": args.thinking,
                 "seed": args.seed,
+                "reproducibility": reproducibility,
                 "retriever": retrieval.get("retriever", "sqlite-dense"),
                 "reranker": retrieval.get("reranker"),
                 "embedding_model": retrieval.get("model_name"),

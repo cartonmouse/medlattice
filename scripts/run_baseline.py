@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import random
 import sys
 import time
 from datetime import datetime, timezone
@@ -15,6 +14,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
 
 from qwen_medical_qa.prompting import build_messages
+from qwen_medical_qa.reproducibility import configure_reproducibility
 
 
 def parse_args() -> argparse.Namespace:
@@ -32,6 +32,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--top-p", type=float, default=0.8)
     parser.add_argument("--top-k", type=int, default=20)
     parser.add_argument("--greedy", action="store_true")
+    parser.add_argument(
+        "--deterministic",
+        action="store_true",
+        help="request deterministic torch/CUDA algorithms and record the setting",
+    )
     return parser.parse_args()
 
 
@@ -74,13 +79,9 @@ def apply_chat_template(tokenizer: Any, record: dict[str, Any], thinking: bool) 
 def main() -> None:
     args = parse_args()
 
+    reproducibility = configure_reproducibility(args.seed, args.deterministic)
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
-
-    random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(args.seed)
 
     records = load_jsonl(args.input)
     if args.limit is not None:
@@ -154,6 +155,7 @@ def main() -> None:
                 "adapter": str(args.adapter) if args.adapter else None,
                 "thinking": args.thinking,
                 "seed": args.seed,
+                "reproducibility": reproducibility,
                 "prompt_tokens": int(input_length),
                 "output_tokens": output_tokens,
                 "latency_ms": round(elapsed * 1000, 2),

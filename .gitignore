@@ -11,6 +11,7 @@ models/
 checkpoints/
 logs/
 .hf-cache/
+.ann-deps/
 *.safetensors
 *.bin
 *.pt

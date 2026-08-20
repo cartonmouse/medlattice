@@ -1,0 +1,1693 @@
+{
+  "task": "multiple_choice_exact_letter",
+  "total": 240,
+  "correct": 115,
+  "invalid": 0,
+  "accuracy": 0.4792,
+  "invalid_rate": 0.0,
+  "details": [
+    {
+      "id": "cmb-exam-val-1",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-2",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-3",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-4",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-6",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-7",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-9",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-11",
+      "predicted": "C",
+      "reference": "D",
+      "correct": false,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-12",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-13",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-14",
+      "predicted": "E",
+      "reference": "C",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-15",
+      "predicted": "B",
+      "reference": "D",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-16",
+      "predicted": "C",
+      "reference": "B",
+      "correct": false,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-17",
+      "predicted": "A",
+      "reference": "C",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-20",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-21",
+      "predicted": "E",
+      "reference": "D",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-22",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-23",
+      "predicted": "E",
+      "reference": "C",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-24",
+      "predicted": "B",
+      "reference": "C",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-25",
+      "predicted": "D",
+      "reference": "E",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-26",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-27",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-28",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-30",
+      "predicted": "D",
+      "reference": "A",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-31",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-32",
+      "predicted": "D",
+      "reference": "E",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-33",
+      "predicted": "D",
+      "reference": "E",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-34",
+      "predicted": "E",
+      "reference": "A",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-35",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-36",
+      "predicted": "E",
+      "reference": "A",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-37",
+      "predicted": "E",
+      "reference": "C",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-38",
+      "predicted": "E",
+      "reference": "C",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-39",
+      "predicted": "E",
+      "reference": "D",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-50",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-51",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-52",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-53",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-54",
+      "predicted": "B",
+      "reference": "D",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-55",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-56",
+      "predicted": "B",
+      "reference": "C",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-57",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-58",
+      "predicted": "A",
+      "reference": "C",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-59",
+      "predicted": "A",
+      "reference": "C",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-61",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-62",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-63",
+      "predicted": "D",
+      "reference": "A",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-64",
+      "predicted": "D",
+      "reference": "A",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-69",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-70",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-71",
+      "predicted": "A",
+      "reference": "C",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-73",
+      "predicted": "D",
+      "reference": "B",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-74",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-75",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-76",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-79",
+      "predicted": "C",
+      "reference": "A",
+      "correct": false,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-80",
+      "predicted": "B",
+      "reference": "A",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-81",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-82",
+      "predicted": "E",
+      "reference": "D",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-85",
+      "predicted": "A",
+      "reference": "D",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-86",
+      "predicted": "A",
+      "reference": "C",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-87",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-88",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-89",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-90",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-92",
+      "predicted": "E",
+      "reference": "A",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-93",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-94",
+      "predicted": "B",
+      "reference": "E",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-95",
+      "predicted": "B",
+      "reference": "A",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-96",
+      "predicted": "E",
+      "reference": "D",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-97",
+      "predicted": "E",
+      "reference": "D",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-98",
+      "predicted": "B",
+      "reference": "A",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-99",
+      "predicted": "D",
+      "reference": "A",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-100",
+      "predicted": "E",
+      "reference": "A",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-101",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-102",
+      "predicted": "A",
+      "reference": "C",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-103",
+      "predicted": "B",
+      "reference": "E",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-104",
+      "predicted": "B",
+      "reference": "E",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-105",
+      "predicted": "A",
+      "reference": "B",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-106",
+      "predicted": "B",
+      "reference": "E",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-107",
+      "predicted": "B",
+      "reference": "E",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-108",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-109",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-110",
+      "predicted": "E",
+      "reference": "D",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-111",
+      "predicted": "A",
+      "reference": "C",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-113",
+      "predicted": "A",
+      "reference": "B",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-115",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-116",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-118",
+      "predicted": "E",
+      "reference": "B",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-119",
+      "predicted": "D",
+      "reference": "E",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-121",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-126",
+      "predicted": "E",
+      "reference": "D",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-127",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-128",
+      "predicted": "E",
+      "reference": "C",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-129",
+      "predicted": "D",
+      "reference": "B",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-130",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-131",
+      "predicted": "D",
+      "reference": "C",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-132",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-133",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-134",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-135",
+      "predicted": "D",
+      "reference": "E",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-136",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-137",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-138",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-139",
+      "predicted": "E",
+      "reference": "C",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-140",
+      "predicted": "E",
+      "reference": "B",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-141",
+      "predicted": "D",
+      "reference": "E",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-142",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-143",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-144",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-145",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-146",
+      "predicted": "D",
+      "reference": "C",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-147",
+      "predicted": "C",
+      "reference": "E",
+      "correct": false,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-148",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-149",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-150",
+      "predicted": "D",
+      "reference": "E",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-151",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-152",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-153",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-154",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-155",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-156",
+      "predicted": "B",
+      "reference": "E",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-157",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-158",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-159",
+      "predicted": "A",
+      "reference": "B",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-160",
+      "predicted": "E",
+      "reference": "C",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-161",
+      "predicted": "A",
+      "reference": "E",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-162",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-163",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-164",
+      "predicted": "E",
+      "reference": "C",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-165",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-166",
+      "predicted": "A",
+      "reference": "C",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-167",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-168",
+      "predicted": "E",
+      "reference": "D",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-169",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-170",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-171",
+      "predicted": "D",
+      "reference": "E",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-172",
+      "predicted": "B",
+      "reference": "A",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-173",
+      "predicted": "B",
+      "reference": "C",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-174",
+      "predicted": "E",
+      "reference": "B",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-175",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-176",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-177",
+      "predicted": "B",
+      "reference": "D",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-178",
+      "predicted": "E",
+      "reference": "B",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-179",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-180",
+      "predicted": "E",
+      "reference": "D",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-181",
+      "predicted": "B",
+      "reference": "C",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-182",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-183",
+      "predicted": "E",
+      "reference": "B",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-184",
+      "predicted": "D",
+      "reference": "A",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-185",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-186",
+      "predicted": "C",
+      "reference": "B",
+      "correct": false,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-187",
+      "predicted": "E",
+      "reference": "D",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-188",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-189",
+      "predicted": "E",
+      "reference": "C",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-190",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-191",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-192",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-195",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-196",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-198",
+      "predicted": "B",
+      "reference": "E",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-199",
+      "predicted": "A",
+      "reference": "B",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-200",
+      "predicted": "A",
+      "reference": "B",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-201",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-202",
+      "predicted": "A",
+      "reference": "E",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-203",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-204",
+      "predicted": "D",
+      "reference": "A",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-205",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-206",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-207",
+      "predicted": "D",
+      "reference": "C",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-208",
+      "predicted": "A",
+      "reference": "D",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-209",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-210",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-211",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-212",
+      "predicted": "B",
+      "reference": "A",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-213",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-214",
+      "predicted": "A",
+      "reference": "D",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-215",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-216",
+      "predicted": "D",
+      "reference": "C",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-217",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-218",
+      "predicted": "E",
+      "reference": "B",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-219",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-220",
+      "predicted": "A",
+      "reference": "B",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-221",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-222",
+      "predicted": "E",
+      "reference": "B",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-223",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-224",
+      "predicted": "D",
+      "reference": "B",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-225",
+      "predicted": "D",
+      "reference": "E",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-226",
+      "predicted": "E",
+      "reference": "D",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-227",
+      "predicted": "C",
+      "reference": "D",
+      "correct": false,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-228",
+      "predicted": "A",
+      "reference": "E",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-229",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-230",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-231",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-232",
+      "predicted": "E",
+      "reference": "B",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-233",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-234",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-235",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-236",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-237",
+      "predicted": "B",
+      "reference": "C",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-238",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-239",
+      "predicted": "E",
+      "reference": "D",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-240",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-241",
+      "predicted": "D",
+      "reference": "A",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-242",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-243",
+      "predicted": "A",
+      "reference": "B",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-244",
+      "predicted": "B",
+      "reference": "D",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-245",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-246",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-247",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-248",
+      "predicted": "D",
+      "reference": "D",
+      "correct": true,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-249",
+      "predicted": "E",
+      "reference": "C",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-250",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-251",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-252",
+      "predicted": "B",
+      "reference": "A",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-253",
+      "predicted": "C",
+      "reference": "C",
+      "correct": true,
+      "answer": "C"
+    },
+    {
+      "id": "cmb-exam-val-254",
+      "predicted": "D",
+      "reference": "B",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-255",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-256",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-257",
+      "predicted": "A",
+      "reference": "B",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-258",
+      "predicted": "B",
+      "reference": "C",
+      "correct": false,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-259",
+      "predicted": "E",
+      "reference": "D",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-260",
+      "predicted": "D",
+      "reference": "E",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-261",
+      "predicted": "D",
+      "reference": "E",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-262",
+      "predicted": "D",
+      "reference": "A",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-263",
+      "predicted": "D",
+      "reference": "A",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-264",
+      "predicted": "A",
+      "reference": "B",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-265",
+      "predicted": "D",
+      "reference": "E",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-266",
+      "predicted": "D",
+      "reference": "E",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-267",
+      "predicted": "A",
+      "reference": "D",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-268",
+      "predicted": "A",
+      "reference": "D",
+      "correct": false,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-269",
+      "predicted": "D",
+      "reference": "A",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-271",
+      "predicted": "D",
+      "reference": "A",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-272",
+      "predicted": "D",
+      "reference": "A",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-273",
+      "predicted": "E",
+      "reference": "E",
+      "correct": true,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-274",
+      "predicted": "E",
+      "reference": "D",
+      "correct": false,
+      "answer": "E"
+    },
+    {
+      "id": "cmb-exam-val-275",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-276",
+      "predicted": "A",
+      "reference": "A",
+      "correct": true,
+      "answer": "A"
+    },
+    {
+      "id": "cmb-exam-val-277",
+      "predicted": "D",
+      "reference": "C",
+      "correct": false,
+      "answer": "D"
+    },
+    {
+      "id": "cmb-exam-val-278",
+      "predicted": "B",
+      "reference": "B",
+      "correct": true,
+      "answer": "B"
+    },
+    {
+      "id": "cmb-exam-val-279",
+      "predicted": "E",
+      "reference": "A",
+      "correct": false,
+      "answer": "E"
+    }
+  ],
+  "model": "Qwen/Qwen3-1.7B",
+  "thinking": false,
+  "prediction_file": "outputs\\cmb-rag-v1\\rag-faiss-bm25-deterministic-val.jsonl"
+}

@@ -27,7 +27,11 @@
 - [x] 完成 SQLite vector store、BM25 reranker baseline，并接入生成式 RAG
 - [x] 完成资料不足拒答、高风险意图拦截和合成安全 benchmark
 - [x] 完成基于授权 CMB-Exam train split 的本地闭域 RAG 实验（原始与派生数据不入库）
-- [ ] 完成生产级 ANN/vector DB、神经 reranker、真实授权知识库、DPO 和服务化实验
+- [x] 完成统一 seed/确定性开关、运行元数据和预测漂移回归工具
+- [x] 完成可选 FAISS HNSW 后端与 SQLite 对照实验
+- [x] 完成可选 Transformer Cross-Encoder 神经 reranker 接口、测试和 CLI 接入
+- [x] 完成神经 reranker 实际模型对比和 CMB 闭域消融
+- [ ] 完成生产级 ANN/vector DB、真实授权知识库、DPO 和服务化实验
 
 ## 项目结构
 
@@ -293,7 +297,95 @@ python scripts/evaluate_benchmark.py `
   --output reports/cmb-rag-v1-rag-base-val.json
 ```
 
-本次匹配运行中，直接基线为 107/240（44.58%），dense-only RAG 为 111/240（46.25%），dense + BM25 为 115/240（47.92%）。由于 greedy CUDA 推理重跑出现过 112 与 115 两个结果，这些数字只作为初步工程结果；不能解释为稳定的医疗能力提升。详细结果见 [`reports/cmb-rag-v1.md`](reports/cmb-rag-v1.md)。
+本次匹配运行中，直接基线为 107/240（44.58%），dense-only RAG 为 111/240（46.25%），dense + BM25 为 115/240（47.92%）。此前普通 greedy 重跑出现过 112 与 115 两个结果；补充 `--deterministic` 后，8 条 smoke 两次预测完全一致，全量结果与最新 BM25 结果 240/240 条一致。详细结果见 [`reports/cmb-rag-v1.md`](reports/cmb-rag-v1.md) 和 [`reports/reproducibility-v1.md`](reports/reproducibility-v1.md)。
+
+## 当前阶段：可复现性与预测漂移 v1
+
+基线和 CMB-RAG 脚本现在支持 `--deterministic`，会记录 seed、Torch/CUDA、cuDNN 和 CUBLAS 配置；`scripts/compare_predictions.py` 可对两次 JSONL 结果做不暴露题目文本的漂移分析。
+
+```powershell
+python scripts/run_cmb_rag.py `
+  --model Qwen/Qwen3-1.7B `
+  --input data/processed/cmb-rag-v1/qa_benchmark.jsonl `
+  --retrieval outputs/cmb-rag-v1/retrieval.jsonl `
+  --output outputs/cmb-rag-v1/rag-deterministic-val.jsonl `
+  --max-new-tokens 4 `
+  --max-input-tokens 2048 `
+  --seed 42 `
+  --greedy `
+  --deterministic `
+  --local-files-only
+
+python scripts/compare_predictions.py `
+  --left outputs/cmb-rag-v1/rag-base-val.jsonl `
+  --right outputs/cmb-rag-v1/rag-deterministic-val.jsonl
+```
+
+`--deterministic` 不是跨机器和跨软件版本的绝对复现保证；当前仍需锁定环境版本、模型 revision，并补充多 seed 方差。完整说明见 [`reports/reproducibility-v1.md`](reports/reproducibility-v1.md)。
+
+## 当前阶段：FAISS HNSW ANN v1
+
+SQLite vector store 仍保留为 O(N) reference backend，同时增加可选的 FAISS `IndexHNSWFlat`。FAISS 使用归一化向量的 inner product，等价于 cosine similarity；chunk 元数据放在 `.faiss.meta.json` sidecar。可选依赖见 [`requirements-rag-ann.txt`](requirements-rag-ann.txt)，默认环境不强制安装。
+
+```powershell
+python -m pip install -r requirements-rag-ann.txt
+
+python scripts/build_faiss_index.py `
+  --index outputs/cmb-rag-v1/index.json `
+  --output outputs/cmb-rag-v1/index.faiss `
+  --hnsw-m 32 `
+  --ef-construction 80 `
+  --ef-search 64
+
+python scripts/retrieve_faiss.py `
+  --index outputs/cmb-rag-v1/index.faiss `
+  --input data/processed/cmb-rag-v1/qa_benchmark.jsonl `
+  --output outputs/cmb-rag-v1/retrieval-faiss-bm25.jsonl `
+  --device cuda `
+  --batch-size 16 `
+  --candidate-k 5 `
+  --top-k 3 `
+  --reranker bm25 `
+  --local-files-only
+
+python scripts/compare_retrievals.py `
+  --left outputs/cmb-rag-v1/retrieval.jsonl `
+  --right outputs/cmb-rag-v1/retrieval-faiss-bm25.jsonl `
+  --top-k 3
+```
+
+在 4,984 条 CMB 文档、240 条查询上，FAISS HNSW 平均 search 约 0.2383 ms，SQLite scan 约 495.93 ms；top-3 完整排名 239/240 一致，FAISS+BM25 与 SQLite+BM25 的最终答案 240/240 一致。该延迟不包含 embedding 和生成，也不代表生产 SLA。详细结果见 [`reports/faiss-ann-v1.md`](reports/faiss-ann-v1.md)。
+
+## 当前阶段：Transformer Cross-Encoder Reranker v1
+
+在 dense candidate top-k 之后，项目现在提供可选的 Transformer Cross-Encoder 重排器。默认实现是 [`TransformerCrossEncoderReranker`](src/qwen_medical_qa/neural_reranker.py)，默认模型为 [`BAAI/bge-reranker-v2-m3`](https://huggingface.co/BAAI/bge-reranker-v2-m3)。它对同一个 query 和每个 candidate passage 做成对打分，再按 raw logit 排序；raw logit 只能用于同一候选集内排序，不能当作概率。
+
+BM25、神经 reranker 和不重排路径共用 `RerankedResult`，并且只有选择 `--reranker neural` 时才加载 Transformer 模型。模型下载不进入 Git 仓库，建议先设置本地缓存并使用 `--local-files-only` 做复现实验：
+
+```powershell
+$env:HF_HOME = "$PWD/.hf-cache"
+$rerankerModel = "$PWD/models/bge-reranker-v2-m3"
+python -m pip install -r requirements-rag-reranker.txt
+
+python scripts/retrieve_faiss.py `
+  --index outputs/cmb-rag-v1/index.faiss `
+  --input data/processed/cmb-rag-v1/qa_benchmark.jsonl `
+  --output outputs/cmb-rag-v1/retrieval-faiss-neural.jsonl `
+  --device cuda `
+  --batch-size 16 `
+  --candidate-k 10 `
+  --top-k 3 `
+  --reranker neural `
+  --reranker-model $rerankerModel `
+  --reranker-device cuda `
+  --reranker-batch-size 8 `
+  --reranker-max-length 512 `
+  --local-files-only
+```
+
+模型文件已手动整理到项目 `models/bge-reranker-v2-m3`，并通过 Transformers 离线加载与项目封装的单样本前向校验。240 条 CMB val 上，FAISS+neural candidate top-10→top-3 的平均重排延迟为 303.97 ms、P95 为 466.81 ms，Qwen deterministic Accuracy 为 45.83%（110/240）；同一候选规模下 FAISS+BM25 为 47.92%（115/240）。neural 改变了 65/240 条最终预测，但没有带来收益，因此保留为失败但有面试价值的消融结果。详细结果见 [`reports/neural-reranker-v1.md`](reports/neural-reranker-v1.md)。
+
+详细阶段记录见 [`reports/neural-reranker-v1.md`](reports/neural-reranker-v1.md)。
 
 Windows CUDA 环境的 PyTorch 安装命令会根据驱动和 CUDA wheel 选择单独确定，不把一个可能失效的固定命令写死在项目中。
 

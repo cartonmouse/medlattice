@@ -33,6 +33,17 @@ class RerankedResult:
         }
 
 
+def describe_reranker(reranker: object | None) -> dict[str, object | None]:
+    """Return stable metadata without requiring a concrete reranker type."""
+    return {
+        "reranker_model": getattr(reranker, "model_name", None),
+        "reranker_device": getattr(reranker, "device", None),
+        "reranker_batch_size": getattr(reranker, "batch_size", None),
+        "reranker_max_length": getattr(reranker, "max_length", None),
+        "reranker_score_type": getattr(reranker, "score_type", None),
+    }
+
+
 class BM25Reranker:
     """A dependency-free BM25 reranker over a dense-retrieved candidate set."""
 

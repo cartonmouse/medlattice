@@ -1,0 +1,11 @@
+{
+  "left_file": "outputs\\cmb-rag-v1\\retrieval-faiss-bm25.jsonl",
+  "right_file": "outputs\\cmb-rag-v1\\retrieval-faiss-neural.jsonl",
+  "total": 240,
+  "top_k": 3,
+  "exact_ranking_match": 4,
+  "exact_set_match": 18,
+  "mean_set_overlap": 0.501389,
+  "left_backend": "faiss-hnsw",
+  "right_backend": "faiss-hnsw"
+}
