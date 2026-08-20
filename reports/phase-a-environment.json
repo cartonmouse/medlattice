@@ -1,0 +1,15 @@
+{
+  "recorded_at": "2026-08-20",
+  "python": "3.12.13",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "torch": "2.6.0+cu124",
+  "transformers": "5.15.1",
+  "accelerate": "1.14.0",
+  "safetensors": "0.8.0",
+  "cuda_available": true,
+  "cuda_version": "12.4",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "gpu_memory_gib": 8.0,
+  "model": "Qwen/Qwen3-1.7B",
+  "model_snapshot": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e"
+}

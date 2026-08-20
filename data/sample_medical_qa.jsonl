@@ -1,0 +1,6 @@
+{"id":"sample-001","question":"医学文本中，‘症状’通常指什么？","reference_answer":"患者主观感受到的异常表现","source":"synthetic-demo","license":"CC0-1.0"}
+{"id":"sample-002","question":"医学文本中，‘体征’通常指什么？","reference_answer":"通过检查或观察发现的客观表现","source":"synthetic-demo","license":"CC0-1.0"}
+{"id":"sample-003","question":"医学文本中，‘禁忌证’通常指什么？","reference_answer":"不宜采用某种检查或治疗的情况","source":"synthetic-demo","license":"CC0-1.0"}
+{"id":"sample-004","question":"医学文本中，‘鉴别诊断’通常指什么？","reference_answer":"区分多个可能疾病的诊断过程","source":"synthetic-demo","license":"CC0-1.0"}
+{"id":"sample-005","question":"医学文本中，‘预后’通常指什么？","reference_answer":"疾病可能的发展和结局","source":"synthetic-demo","license":"CC0-1.0"}
+

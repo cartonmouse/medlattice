@@ -1,0 +1,7 @@
+# Install a CUDA-enabled PyTorch build separately according to the local CUDA setup.
+# The official Qwen3 documentation recommends Python 3.10+ and PyTorch 2.6+.
+transformers>=4.51.0
+accelerate>=1.0.0
+safetensors>=0.4.0
+PyYAML>=6.0
+tqdm>=4.66.0

@@ -1,0 +1,22 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+env/
+.env
+
+outputs/
+models/
+checkpoints/
+logs/
+.hf-cache/
+*.safetensors
+*.bin
+*.pt
+*.pth
+
+# Keep only small, intentionally curated examples under data/.
+data/raw/
+data/processed/
+data/cache/
