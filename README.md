@@ -8,6 +8,8 @@
 
 > 免责声明：本项目仅用于机器学习工程学习、实验复现和面试演示，不提供诊断、治疗或其他医疗建议。真实数据必须经过合法授权、脱敏和许可证核验。
 
+项目领域术语和边界见 [`CONTEXT.md`](CONTEXT.md)，最终实验总表见 [`reports/project-final-summary.md`](reports/project-final-summary.md)。
+
 ## 当前状态
 
 - [x] 冻结项目目标与阶段验收标准
@@ -619,6 +621,31 @@ python scripts/retrieve_faiss.py `
 详细阶段记录见 [`reports/neural-reranker-v1.md`](reports/neural-reranker-v1.md)。
 
 Windows CUDA 环境的 PyTorch 安装命令会根据驱动和 CUDA wheel 选择单独确定，不把一个可能失效的固定命令写死在项目中。
+
+## 项目收尾：端到端演示与最终总表
+
+当前版本已经完成基线、QLoRA/SFT、RAG、DPO、GRPO 和 Constitutional AI-inspired 安全层实验。最终结果总表、项目完成标准、限制和简历版表述见 [`reports/project-final-summary.md`](reports/project-final-summary.md)。
+
+为了把生成式 RAG 与安全门串成一条可展示链路，`scripts/run_rag_qa.py` 新增了可选的 `--constitutional-gate`：
+
+```powershell
+python scripts/run_rag_qa.py `
+  --model Qwen/Qwen3-1.7B `
+  --index outputs/rag-embedding-v1/index.json `
+  --input data/rag_demo/qa_benchmark.jsonl `
+  --output outputs/project-final-demo/qwen-rag-gated.jsonl `
+  --device cuda `
+  --top-k 3 `
+  --max-new-tokens 64 `
+  --max-input-tokens 2048 `
+  --safe-mode `
+  --constitutional-gate `
+  --seed 42 `
+  --greedy `
+  --local-files-only
+```
+
+开启该开关后，系统会在 Qwen 生成后执行确定性 Constitutional hard gate，保留 `raw_answer`、初始 critique、是否 fallback 和最终 critique。5 条合成演示问题的本地 smoke 中，5/5 条最终通过规则，fallback 为 0；这只是 pipeline smoke，不是医疗准确率或临床安全结论。
 
 ## 面试复盘重点
 

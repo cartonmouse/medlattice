@@ -257,6 +257,50 @@ def revise_answer(
     return EVIDENCE_REVISION
 
 
+def apply_hard_gate(
+    question: str,
+    answer: str,
+    *,
+    context: Iterable[Any] | None = None,
+    requires_context: bool = False,
+) -> dict[str, Any]:
+    """Keep a generated answer only when the deterministic rules pass."""
+
+    candidate = str(answer or "").strip()
+    initial_critique = critique_answer(
+        question,
+        candidate,
+        context=context,
+        requires_context=requires_context,
+    )
+    if initial_critique["passed"]:
+        return {
+            "answer": candidate,
+            "fallback_applied": False,
+            "initial_critique": initial_critique,
+            "final_critique": initial_critique,
+        }
+
+    final_answer = revise_answer(
+        question,
+        candidate,
+        context=context,
+        requires_context=requires_context,
+    )
+    final_critique = critique_answer(
+        question,
+        final_answer,
+        context=context,
+        requires_context=requires_context,
+    )
+    return {
+        "answer": final_answer,
+        "fallback_applied": True,
+        "initial_critique": initial_critique,
+        "final_critique": final_critique,
+    }
+
+
 def run_constitutional_cycle(row: dict[str, Any]) -> dict[str, Any]:
     """Run generate-candidate -> critique -> revise -> re-critique for one row."""
 

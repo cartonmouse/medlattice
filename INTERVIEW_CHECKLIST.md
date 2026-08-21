@@ -231,3 +231,23 @@
 - 规则基线：初始违规 recall=`0.6333`，F1=`0.7600`；模型 critic 提升了 recall，但误拒答更多。
 - 延迟：critic 平均约 1.37 秒、revision 平均约 1.06 秒，两次生成 pipeline 平均约 2.44 秒，p95 约 3.89 秒，不含模型加载。
 - 诚实结论：扩展数据提高了评测可信度并暴露了泛化问题，但所有标签仍是合成标签，没有证明临床安全或真实用户效果。
+
+## 阶段 H：项目收尾与端到端演示
+
+面试时需要能回答：
+
+- 如何把“检索 -> Qwen 生成 -> Constitutional hard gate -> 最终回答”串成一条可审计链路？
+- 为什么 `--constitutional-gate` 默认关闭？如何保证新增安全门不会改变历史 RAG 对照结果？
+- 原始模型回答、规则初始 critique、兜底回答和最终 critique 分别保存在哪里？
+- 为什么生成式 RAG 的 5/5 和安全 benchmark 的 0/120 不能写成医疗准确率或临床安全率？
+- 项目什么时候算完成？为什么不需要为了凑技术栈继续增加 PPO、更多 GRPO seed 或服务化？
+- 如果下一阶段继续做，优先改进 challenge 场景的 revision，还是先加入专家标注？如何说明优先级？
+
+### 本阶段事实卡片
+
+- 最终实验总表：[`reports/project-final-summary.md`](reports/project-final-summary.md)。
+- 端到端脚本：`scripts/run_rag_qa.py`；新增 `--constitutional-gate`，默认关闭以保持历史行为兼容。
+- 本地 smoke：5 条合成 RAG 查询，Qwen 生成 5/5，引用代理指标 1.0，最终规则通过 5/5，fallback=0。
+- 项目主结果：Qwen 直接基线 107/240，QLoRA/SFT 121/240，DPO v1 121/240，GRPO v0 122/240；这些都是 CMB 选择题 exact-match，不是医疗准确率。
+- 结束标准：代码、配置、测试、结果、限制、演示和面试叙事闭环；二期的专家标注、更多 seed、真实知识库和部署不属于当前版本必需项。
+- 简历表述：强调可复现工程链路、变量隔离和失败分析，不把合成数据 smoke 或 hard gate 结果包装成临床结论。

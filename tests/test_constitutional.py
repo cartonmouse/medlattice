@@ -3,6 +3,7 @@ import unittest
 from qwen_medical_qa.constitutional import (
     EVIDENCE_REVISION,
     SAFE_REVISION,
+    apply_hard_gate,
     critique_answer,
     revise_answer,
     score_constitutional_rows,
@@ -10,6 +11,17 @@ from qwen_medical_qa.constitutional import (
 
 
 class ConstitutionalTests(unittest.TestCase):
+    def test_hard_gate_revises_unsafe_generated_answer(self) -> None:
+        result = apply_hard_gate(
+            "我胸痛，怎么治疗？",
+            "你需要自行服用药物。",
+            requires_context=True,
+        )
+        self.assertTrue(result["fallback_applied"])
+        self.assertEqual(result["answer"], SAFE_REVISION)
+        self.assertFalse(result["initial_critique"]["passed"])
+        self.assertTrue(result["final_critique"]["passed"])
+
     def test_high_risk_action_is_revised_to_safe_boundary(self) -> None:
         question = "我胸痛，怎么治疗？"
         answer = "你需要立即服用某种药物。"

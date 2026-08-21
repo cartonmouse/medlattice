@@ -18,6 +18,7 @@ from qwen_medical_qa.rag import build_rag_prompt
 from qwen_medical_qa.rag_embedding import DenseRetriever, TransformerTextEncoder
 from qwen_medical_qa.neural_reranker import TransformerCrossEncoderReranker
 from qwen_medical_qa.reranker import BM25Reranker, describe_reranker
+from qwen_medical_qa.constitutional import apply_hard_gate
 from qwen_medical_qa.safety import ABSTENTION_ANSWER, assess_question
 from qwen_medical_qa.vector_store import SqliteVectorStore
 
@@ -55,6 +56,11 @@ def parse_args() -> argparse.Namespace:
         "--safe-mode",
         action="store_true",
         help="abstain on high-risk intent or missing retrieval context before generation",
+    )
+    parser.add_argument(
+        "--constitutional-gate",
+        action="store_true",
+        help="apply the deterministic Constitutional AI-inspired hard gate after generation",
     )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--greedy", action="store_true")
@@ -208,6 +214,18 @@ def main() -> None:
         ):
             rag_prompt = build_rag_prompt(row["question"], results)
             if safety_decision is not None and safety_decision.abstain:
+                raw_answer = ABSTENTION_ANSWER
+                constitutional = (
+                    apply_hard_gate(
+                        row["question"],
+                        raw_answer,
+                        context=results,
+                        requires_context=True,
+                    )
+                    if args.constitutional_gate
+                    else None
+                )
+                answer = constitutional["answer"] if constitutional else raw_answer
                 result = {
                     "id": row["id"],
                     "question": row["question"],
@@ -226,7 +244,7 @@ def main() -> None:
                     "retrieved": [result.to_dict() for result in results],
                     "retrieval_abstained": not bool(results),
                     "prompt": rag_prompt,
-                    "answer": ABSTENTION_ANSWER,
+                    "answer": answer,
                     "prompt_tokens": 0,
                     "output_tokens": 0,
                     "latency_ms": 0.0,
@@ -234,11 +252,15 @@ def main() -> None:
                     "peak_cuda_allocated_mb": None,
                     "peak_cuda_reserved_mb": None,
                     "generation_skipped": True,
+                    "constitutional_gate": args.constitutional_gate,
                     "safety": safety_decision.to_dict(),
                     "run_started_utc": run_started,
                 }
+                if constitutional is not None:
+                    result["raw_answer"] = raw_answer
+                    result["constitutional"] = constitutional
                 handle.write(json.dumps(result, ensure_ascii=False) + "\n")
-                print(f"{row['id']}: abstained, answer={ABSTENTION_ANSWER!r}")
+                print(f"{row['id']}: abstained, answer={answer!r}")
                 continue
 
             if tokenizer is None or model is None:
@@ -270,7 +292,18 @@ def main() -> None:
 
             input_length = inputs["input_ids"].shape[-1]
             output_ids = generated[0][input_length:]
-            answer = tokenizer.decode(output_ids, skip_special_tokens=True).strip()
+            raw_answer = tokenizer.decode(output_ids, skip_special_tokens=True).strip()
+            constitutional = (
+                apply_hard_gate(
+                    row["question"],
+                    raw_answer,
+                    context=results,
+                    requires_context=True,
+                )
+                if args.constitutional_gate
+                else None
+            )
+            answer = constitutional["answer"] if constitutional else raw_answer
             peak_allocated = None
             peak_reserved = None
             if torch.cuda.is_available():
@@ -302,8 +335,12 @@ def main() -> None:
                 "peak_cuda_allocated_mb": peak_allocated,
                 "peak_cuda_reserved_mb": peak_reserved,
                 "generation_skipped": False,
+                "constitutional_gate": args.constitutional_gate,
                 "run_started_utc": run_started,
             }
+            if constitutional is not None:
+                result["raw_answer"] = raw_answer
+                result["constitutional"] = constitutional
             if safety_decision is not None:
                 result["safety"] = safety_decision.to_dict()
             handle.write(json.dumps(result, ensure_ascii=False) + "\n")
