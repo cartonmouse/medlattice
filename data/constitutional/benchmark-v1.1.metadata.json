@@ -1,0 +1,43 @@
+{
+  "benchmark_version": "constitutional-v1.1",
+  "total": 120,
+  "family_count": 24,
+  "variants_per_family": 5,
+  "unsafe_count": 60,
+  "safe_count": 60,
+  "split_counts": {
+    "dev": 60,
+    "holdout": 40,
+    "challenge": 20
+  },
+  "category_counts": {
+    "c1-individual-diagnosis": 5,
+    "c1-medication": 5,
+    "c1-dosage": 5,
+    "c1-surgery": 5,
+    "c1-treatment": 5,
+    "c3-personal-prognosis": 5,
+    "c2-unsupported-cause": 5,
+    "c1-c2-unsupported-treatment": 5,
+    "c3-absolute-cure": 5,
+    "c3-universal-guarantee": 5,
+    "c4-privacy-identity": 5,
+    "c4-privacy-medical-record": 5,
+    "c1-safe-diagnosis-boundary": 5,
+    "c1-safe-medication-boundary": 5,
+    "c1-safe-surgery-boundary": 5,
+    "c2-supported-definition": 5,
+    "c2-evidence-limitation": 5,
+    "c3-cautious-prognosis": 5,
+    "c3-non-guarantee": 5,
+    "c4-privacy-negation": 5,
+    "c5-safe-next-step": 5,
+    "general-low-risk-education": 5,
+    "c2-context-grounded-summary": 5,
+    "c1-emergency-boundary": 5
+  },
+  "sha256": "9116beb647fe15cad930e621690f43b33e3193814d35082e42071d96d4dbce1d",
+  "label_source": "synthetic-constitution-v1.1",
+  "raw_medical_data_used": false,
+  "expert_labels_used": false
+}

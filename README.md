@@ -37,6 +37,8 @@
 - [x] 完成 CMB train-only hard-negative 偏好构造、DPO smoke、正式训练与独立 val 对照
 - [x] 完成 CMB train-only GRPO v0 可验证奖励 smoke、正式训练与独立 val 对照
 - [x] 完成 Constitutional AI-inspired v0 原则、批评-修订链路与合成 benchmark
+- [x] 完成 Constitutional AI-inspired v1 模型批评、模型修订与规则硬门禁对照
+- [x] 完成 Constitutional AI-inspired v1.1 120 条合成安全 benchmark 扩展与分层评测
 - [ ] 完成生产级 ANN/vector DB、真实授权知识库和服务化实验
 
 ## 项目结构
@@ -57,6 +59,8 @@ qwen-medical-qa/
 │   ├── prepare_grpo.py        # 准备 CMB train-only GRPO 记录
 │   ├── train_grpo.py          # 训练可验证奖励的 QLoRA-GRPO adapter
 │   ├── run_constitutional.py  # 运行 Constitutional AI-inspired 批评-修订评测
+│   ├── run_constitutional_v1.py # 运行 Qwen model-in-the-loop 批评-修订链路
+│   ├── prepare_constitutional_benchmark.py # 生成分层合成安全 benchmark
 │   ├── evaluate_preference.py # 评估 chosen/rejected 偏好 proxy
 │   ├── prepare_cmb_rag.py     # 从本地 CMB train/val 构建闭域检索语料
 │   └── run_cmb_rag.py         # 运行 CMB 闭域 RAG 选择题评测
@@ -422,6 +426,54 @@ python scripts/run_constitutional.py
 ```
 
 实现见 [`src/qwen_medical_qa/constitutional.py`](src/qwen_medical_qa/constitutional.py)、[`scripts/run_constitutional.py`](scripts/run_constitutional.py)、[`configs/constitutional-ai-v0.yaml`](configs/constitutional-ai-v0.yaml) 和 [`data/constitutional/benchmark-v1.jsonl`](data/constitutional/benchmark-v1.jsonl)；完整结果与面试表述见 [`reports/constitutional-ai-v0.md`](reports/constitutional-ai-v0.md)。
+
+## 当前阶段：Constitutional AI-inspired v1（model-in-the-loop）
+
+本阶段把 v0 的 deterministic critic/reviser 替换为可插拔的 Qwen model-in-the-loop：模型先生成候选回答（`candidate-source=model`），再输出结构化 JSON critique，随后依据 critique 生成修订回答。所有原始回答、critic 原文、解析结果、修订结果和最终门禁结果都会保留在逐条 JSONL 中。
+
+为了避免把模型的偶然输出当成安全保证，v1 仍保留 v0 规则作为 fail-closed hard gate：模型修订如果没有通过规则，就回退到确定性的安全模板。正式 12 条受控 benchmark 使用 4-bit NF4、Qwen3-1.7B、greedy、`enable_thinking=false`；模型 critic 识别初始违规 8/8、JSON 解析失败 0 条，模型 revision 单独通过规则 6/8（75%），剩余 2 条由规则硬门禁接管，最终 12/12 通过。最终 100% 是“模型批评/修订 + 规则兜底”的组合结果，不能归因于模型 revision 单独能力。
+
+此外，2 条 model-source smoke 已验证 Qwen 候选生成、批评和修订调用能够离线运行；由于候选不是 benchmark 中的受控初始回答，不使用 benchmark 初始违规标签计算 critic accuracy。完整失败分析见 [`reports/constitutional-ai-v1.md`](reports/constitutional-ai-v1.md)。
+
+```powershell
+python scripts/run_constitutional_v1.py `
+  --candidate-source benchmark `
+  --local-files-only `
+  --greedy `
+  --load-in-4bit
+
+python scripts/run_constitutional_v1.py `
+  --candidate-source model `
+  --limit 2 `
+  --output outputs/constitutional-v1/model-smoke/results.jsonl `
+  --summary outputs/constitutional-v1/model-smoke/summary.json `
+  --local-files-only `
+  --greedy `
+  --load-in-4bit
+```
+
+实现见 [`src/qwen_medical_qa/constitutional_v1.py`](src/qwen_medical_qa/constitutional_v1.py)、[`scripts/run_constitutional_v1.py`](scripts/run_constitutional_v1.py) 和 [`configs/constitutional-ai-v1.yaml`](configs/constitutional-ai-v1.yaml)。
+
+## 当前阶段：Constitutional AI-inspired v1.1（120 条分层安全 benchmark）
+
+为避免 12 条样本的指标过于偶然，本阶段用 24 个场景族各生成 5 个变体，共 120 条本地合成样本；违规/安全各 60 条，按场景族划分为 dev 60、holdout 40、challenge 20，变体不会跨 split。数据生成器会检查 ID、场景族、平衡标签和重复问答对，元数据记录 SHA-256、标签来源及“无真实医疗数据/无专家标签”的限制。
+
+扩展后的 120 条正式评测中，Qwen critic 的 recall=`1.0`、precision=`0.8108`、F1=`0.8955`，JSON 解析失败=`0`；安全样本 false-abstain rate=`0.2333`。模型 revision 按 60 条期望违规标签计算，单独修复 `43/60=71.67%`，剩余 20 条模型修订结果由 hard gate 接管，最终规则违规=`0/120`。分层结果显示 dev/holdout/challenge 的 revision success rate 分别为 `83.33%/85%/10%`，challenge 的隐私和紧急场景仍然是薄弱点。最终 0 条违规是模型与规则组合结果，不能归因于模型 revision 单独能力。
+
+```powershell
+python scripts/prepare_constitutional_benchmark.py
+
+python scripts/run_constitutional_v1.py `
+  --input data/constitutional/benchmark-v1.1.jsonl `
+  --output outputs/constitutional-v1.1/results.jsonl `
+  --summary outputs/constitutional-v1.1/summary.json `
+  --candidate-source benchmark `
+  --local-files-only `
+  --greedy `
+  --load-in-4bit
+```
+
+数据生成配置见 [`configs/constitutional-ai-v1.1.yaml`](configs/constitutional-ai-v1.1.yaml)，完整分析见 [`reports/constitutional-ai-v1.1.md`](reports/constitutional-ai-v1.1.md)。
 
 真实知识库接入前，先复制 [`data/sources/rag-knowledge-base.template.yaml`](data/sources/rag-knowledge-base.template.yaml)，补齐来源、版本、许可证、隐私和专家审核字段；模板本身不代表任何真实数据已经获准使用。
 

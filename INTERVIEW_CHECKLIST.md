@@ -188,3 +188,46 @@
 - 结果：初始违规 8/12，修订后违规 0/12，成功修订 8/8；初始违规标签准确率和最终安全标签准确率均为 1.0。
 - 实现：`critique_answer()` 记录原则 ID、严重性和证据；`revise_answer()` 选择固定安全模板；每条样本保留 initial answer、initial critique、revised answer 和 revised critique。
 - 诚实结论：这是安全工程的可复现规则基线，不是临床安全证明，也不是完整的 LLM 自我批评训练。下一步应在合法、脱敏、经领域审核的开放式数据上比较规则 critic、Qwen critic 和人工复核的一致性。
+
+## 阶段 F：Constitutional AI-inspired v1（model-in-the-loop）
+
+面试时需要能回答：
+
+- v1 的完整链路是什么？为什么是“候选回答 → Qwen critic → Qwen revision → deterministic hard gate”，而不是只调用一次安全 prompt？
+- 为什么正式评测使用 benchmark candidate，而不是直接使用模型生成 candidate？`candidate-source=model` 的 smoke 又证明了什么？
+- critic 为什么要求结构化 JSON？如果模型输出 Markdown、非法 JSON 或字段类型错误，系统如何处理？
+- 为什么最终安全通过率不能归因于 Qwen revision？模型 revision 单独通过率、fallback 数和最终 hard gate 结果分别是多少？
+- 模型 critic 和模型 reviser 使用同一个 Qwen 有什么风险？如何用独立 critic、专家标注或规则 oracle 做交叉验证？
+- 第一轮 smoke 暴露了什么误报？为什么“无法提供药物建议”和“请勿自行服用”不能被当成用药处方？你如何修改规则和 prompt？
+- 如果下一步要服务化，如何记录原始候选、critic JSON、修订答案、hard-gate 决策和 constitution 版本，保证每次回答可追溯？
+
+### 本阶段事实卡片
+
+- 模型：`Qwen/Qwen3-1.7B`，4-bit NF4，greedy，`enable_thinking=false`，本地文件离线运行；没有使用外部模型 API或真实医疗数据。
+- 正式 benchmark：12 条本地合成样本；模型 critic 识别初始违规 8/8，JSON 解析失败 0 条，critic 标签准确率 1.0。
+- 模型 revision：初始违规 8 条中单独修复 6 条（75%）；模型 revision 仍违反规则 2/12；hard gate fallback 2/12；最终规则违规 0/12。
+- model-source smoke：2 条，Qwen 实际生成候选、批评和修订；解析失败 0 条，最终规则通过 2/2。由于初始回答由模型生成，不用 benchmark 初始标签计算准确率。
+- 失败样本：隐私索取和个人诊断在模型 revision 后仍未消失，由 deterministic hard gate 回退到安全模板。
+- 诚实结论：v1 证明了模型批评/修订接口和审计链路可运行，但模型修订仍不稳定；最终 100% 是模型与规则组合结果，不是模型自身安全能力，也不是医疗安全证明。
+
+## 阶段 G：Constitutional AI-inspired v1.1 数据扩展
+
+面试时需要能回答：
+
+- 为什么从 12 条扩展到 120 条？为什么不能简单复制原始样本？
+- 24 个场景族、每族 5 个变体如何划分 dev/holdout/challenge？为什么同一场景族不能跨 split？
+- 为什么要同时报告 precision、recall、F1 和 false-abstain rate？安全场景中 false positive 的代价是什么？
+- 扩展后模型 critic 的 recall、precision、F1 分别是多少？为什么 critic recall=1.0 仍然不能说明系统很好？
+- `43/60` 的 revision success 分母为什么是 60，而不是规则初筛命中的 40？
+- challenge split 的 revision success 只有 10%，这说明了什么？为什么这是有价值的失败结果？
+- 120 条样本仍然是合成数据，没有专家标签时，如何准确描述结果边界？下一步怎样加入人工或领域专家复核？
+
+### 本阶段事实卡片
+
+- 数据：24 个场景族 × 5 个变体 = 120 条；违规/安全各 60 条；dev/holdout/challenge 为 60/40/20；场景族不跨 split；SHA-256=`9116beb647fe15cad930e621690f43b33e3193814d35082e42071d96d4dbce1d`。
+- 模型 critic：JSON parser failure=0；accuracy=`0.8833`；precision=`0.8108`；recall=`1.0000`；F1=`0.8955`；false-abstain rate=`0.2333`。
+- 模型 revision：期望违规 60 条中单独修复 43 条（71.67%）；仍违反规则 20/120；hard gate fallback=20/120；最终规则违规=0/120。
+- 分层结果：dev/holdout/challenge revision success rate 为 83.33%/85.00%/10.00%；challenge 的隐私和紧急场景是主要薄弱点。
+- 规则基线：初始违规 recall=`0.6333`，F1=`0.7600`；模型 critic 提升了 recall，但误拒答更多。
+- 延迟：critic 平均约 1.37 秒、revision 平均约 1.06 秒，两次生成 pipeline 平均约 2.44 秒，p95 约 3.89 秒，不含模型加载。
+- 诚实结论：扩展数据提高了评测可信度并暴露了泛化问题，但所有标签仍是合成标签，没有证明临床安全或真实用户效果。

@@ -1,0 +1,12 @@
+principle_version: medical-safety-v1
+input: data/constitutional/benchmark-v1.1.jsonl
+metadata: data/constitutional/benchmark-v1.1.metadata.json
+output: outputs/constitutional-v1.1/results.jsonl
+summary: outputs/constitutional-v1.1/summary.json
+model: Qwen/Qwen3-1.7B
+candidate_source: benchmark
+critic: qwen_model_json_critic
+reviser: qwen_model_revision_with_deterministic_hard_gate
+hard_gate: deterministic_constitution_rules
+raw_medical_data_used: false
+external_model_api_used: false

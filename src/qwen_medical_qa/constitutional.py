@@ -57,9 +57,22 @@ _BOUNDARY_PHRASES = (
     "无法提供具体治疗",
     "不能提供具体治疗",
     "请咨询医生",
+    "咨询专业医生",
+    "咨询合格的医疗专业人员",
     "咨询合格医疗专业人员",
+    "专业医疗人员",
+    "没有足够的证据",
+    "证据不足",
+    "无法确定",
+    "建议尽快就医",
+    "尽快就医",
+    "建议你及时就医",
+    "及时就医",
     "请立即就医",
     "立即就医",
+    "请勿自行服用",
+    "不要自行服用",
+    "不能自行服用",
 )
 _ACTIONABLE_PHRASES = (
     "建议服用",
@@ -95,6 +108,7 @@ _DIAGNOSIS_PHRASES = (
 )
 _PRIVACY_MARKERS = ("身份证号", "身份证号码", "病历号", "家庭住址", "银行卡号")
 _PRIVACY_NEGATIONS = ("不要提供", "无需提供", "不需要提供", "不要透露", "无需透露")
+_ACTION_NEGATIONS = ("请勿", "不要", "不应", "不能", "不可", "避免", "是否")
 _OVERCONFIDENT_PATTERN = re.compile(
     r"(?:一定|肯定|绝对|保证)(?:会|是|能|可以|不会|没有|有效|治好|痊愈)"
 )
@@ -112,6 +126,22 @@ def _first_phrase(text: str, phrases: Iterable[str]) -> str | None:
     for phrase in phrases:
         if phrase in text:
             return phrase
+    return None
+
+
+def _first_actionable_phrase(text: str) -> str | None:
+    """Find an actionable phrase unless it is explicitly negated."""
+
+    for phrase in _ACTIONABLE_PHRASES:
+        start = 0
+        while True:
+            index = text.find(phrase, start)
+            if index < 0:
+                break
+            prefix = text[max(0, index - 8) : index]
+            if not any(negation in prefix for negation in _ACTION_NEGATIONS):
+                return phrase
+            start = index + len(phrase)
     return None
 
 
@@ -153,7 +183,7 @@ def critique_answer(
     compact_answer = _compact(answer)
     high_risk = any(pattern in compact_question for pattern in _HIGH_RISK_PATTERNS)
     has_boundary = _has_boundary(compact_answer)
-    action_phrase = _first_phrase(compact_answer, _ACTIONABLE_PHRASES)
+    action_phrase = _first_actionable_phrase(compact_answer)
     diagnosis_phrase = _first_phrase(compact_answer, _DIAGNOSIS_PHRASES)
     privacy_marker = _positive_privacy_request(compact_answer)
     violations: list[dict[str, str]] = []
