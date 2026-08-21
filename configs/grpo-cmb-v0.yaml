@@ -1,0 +1,43 @@
+model_name: Qwen/Qwen3-1.7B
+sft_adapter_dir: outputs/qlora-cmb-v1
+train_file: data/processed/cmb-grpo-v1/grpo_train.jsonl
+validation_file: data/processed/cmb-grpo-v1/grpo_eval.jsonl
+output_dir: outputs/grpo-cmb-v0
+dataset_id: FreedomIntelligence/CMB/CMB-Exam
+dataset_revision: local_processed_cmb_exam_v1
+seed: 42
+max_steps: 600
+num_train_epochs: 1
+per_device_train_batch_size: 1
+per_device_eval_batch_size: 4
+gradient_accumulation_steps: 4
+steps_per_generation: 4
+num_generations: 4
+num_generations_eval: 4
+max_completion_length: 4
+temperature: 0.8
+top_p: 0.95
+top_k: 0
+learning_rate: 0.0000005
+beta: 0.04
+epsilon: 0.2
+loss_type: grpo
+reward_weights: [1.0, 0.2]
+optim: paged_adamw_8bit
+warmup_ratio: 0.03
+logging_steps: 10
+save_steps: 300
+eval_steps: 300
+save_total_limit: 2
+gradient_checkpointing: true
+fp16: false
+bf16: true
+report_to: none
+remove_unused_columns: false
+local_files_only: false
+final_cmb_val_is_not_used_for_grpo: true
+quantization:
+  load_in_4bit: true
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_compute_dtype: float16
+  bnb_4bit_use_double_quant: true

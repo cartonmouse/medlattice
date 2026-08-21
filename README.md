@@ -4,7 +4,7 @@
 
 项目目标不是直接声称“模型已经达到某个指标”，而是完整记录一条可复现的实验链路：
 
-`基线推理 -> 数据清洗 -> QLoRA/SFT -> RAG -> DPO -> 服务化 -> 评测与开源`
+`基线推理 -> 数据清洗 -> QLoRA/SFT -> RAG -> DPO/GRPO -> 服务化 -> 评测与开源`
 
 > 免责声明：本项目仅用于机器学习工程学习、实验复现和面试演示，不提供诊断、治疗或其他医疗建议。真实数据必须经过合法授权、脱敏和许可证核验。
 
@@ -31,7 +31,13 @@
 - [x] 完成可选 FAISS HNSW 后端与 SQLite 对照实验
 - [x] 完成可选 Transformer Cross-Encoder 神经 reranker 接口、测试和 CLI 接入
 - [x] 完成神经 reranker 实际模型对比和 CMB 闭域消融
-- [ ] 完成生产级 ANN/vector DB、真实授权知识库、DPO 和服务化实验
+- [x] 完成 DPO/QLoRA-DPO 偏好数据、smoke、正式训练和隔离 val 对照
+- [x] 完成 UltraMedical-Preference 固定 revision 审计、严格过滤和 human holdout 准备
+- [x] 完成公开偏好数据 DPO v2 正式训练与跨任务对照
+- [x] 完成 CMB train-only hard-negative 偏好构造、DPO smoke、正式训练与独立 val 对照
+- [x] 完成 CMB train-only GRPO v0 可验证奖励 smoke、正式训练与独立 val 对照
+- [x] 完成 Constitutional AI-inspired v0 原则、批评-修订链路与合成 benchmark
+- [ ] 完成生产级 ANN/vector DB、真实授权知识库和服务化实验
 
 ## 项目结构
 
@@ -45,6 +51,13 @@ qwen-medical-qa/
 │   ├── run_baseline.py        # 基线推理与延迟记录
 │   ├── summarize_baseline.py  # 汇总延迟、吞吐和显存
 │   ├── prepare_cmb.py         # 下载、清洗并固定 CMB-Exam 数据子集
+│   ├── prepare_dpo.py         # 从本地 SFT 数据构建 DPO 偏好对
+│   ├── prepare_public_dpo.py  # 审计并转换公开医学偏好数据
+│   ├── train_dpo.py           # 训练 QLoRA-DPO adapter
+│   ├── prepare_grpo.py        # 准备 CMB train-only GRPO 记录
+│   ├── train_grpo.py          # 训练可验证奖励的 QLoRA-GRPO adapter
+│   ├── run_constitutional.py  # 运行 Constitutional AI-inspired 批评-修订评测
+│   ├── evaluate_preference.py # 评估 chosen/rejected 偏好 proxy
 │   ├── prepare_cmb_rag.py     # 从本地 CMB train/val 构建闭域检索语料
 │   └── run_cmb_rag.py         # 运行 CMB 闭域 RAG 选择题评测
 ├── src/qwen_medical_qa/      # 后续抽取可复用模块
@@ -132,6 +145,158 @@ python scripts/train_qlora.py --config configs/qlora.yaml
 smoke 结果见 [`reports/qlora-smoke.md`](reports/qlora-smoke.md)。它只证明训练链路和 adapter 加载可用，不代表正式准确率提升。
 
 正式训练使用 5,000 条 train、240 条 val，在本机 RTX 4060 Laptop 8GB 上完成 1 epoch QLoRA。基础模型在 val 上为 44.58%，QLoRA adapter 为 50.42%，详细配置、逐题迁移统计和复现命令见 [`reports/qlora-full.md`](reports/qlora-full.md)。这里的指标仍然只是 CMB-Exam 单项选择题的答案字母 exact-match，不能解释为医疗准确率。
+
+## 当前阶段：DPO v1（QLoRA-DPO）
+
+DPO 放在 SFT 之后，用于让模型在同一个 prompt 下更偏好 chosen response，而不是只学习一个参考答案。由于当前没有人工或临床专家偏好标注，本阶段使用已有本地 CMB-Exam train split 的参考答案构造正例，并从其他选项中随机采样一个错误选项作为 rejected response。这个设计适合验证 DPO 工程链路，但不能冒充人类偏好数据，也不能据此声称模型获得了临床对齐能力。
+
+偏好数据从本地 5,000 条 CMB train 构建，按 seed=42 固定为 4,800 条 DPO train 和 200 条 DPO eval；最终 240 条 CMB val 完全隔离，不参与偏好对构造。数据文件只保留在本地忽略目录，不上传原始数据或派生数据。实现见 [`src/qwen_medical_qa/dpo_data.py`](src/qwen_medical_qa/dpo_data.py)、[`scripts/prepare_dpo.py`](scripts/prepare_dpo.py) 和 [`scripts/train_dpo.py`](scripts/train_dpo.py)。
+
+```powershell
+python -m pip install -r requirements-dpo.txt
+python scripts/prepare_dpo.py
+
+# 先用 16/4 条样本完成 smoke
+python scripts/train_dpo.py `
+  --config configs/dpo.yaml `
+  --output-dir outputs/dpo-cmb-smoke `
+  --max-train-samples 16 `
+  --max-eval-samples 4
+
+# smoke 通过后，正式运行使用完整数据和独立输出目录
+python scripts/train_dpo.py --config configs/dpo.yaml
+
+python scripts/run_baseline.py `
+  --model Qwen/Qwen3-1.7B `
+  --adapter outputs/dpo-cmb-v1 `
+  --input data/processed/cmb-exam-v1/val.jsonl `
+  --output outputs/dpo-cmb-v1-val.jsonl `
+  --greedy `
+  --deterministic
+
+python scripts/evaluate_benchmark.py `
+  --input outputs/dpo-cmb-v1-val.jsonl `
+  --output reports/dpo-cmb-v1-val.json
+```
+
+训练时以已有 `outputs/qlora-cmb-v1` 作为 policy 初始化，基座使用 4-bit NF4，LoRA adapter 为可训练参数，reference policy 使用 PEFT 的冻结副本；`beta=0.1`、1 epoch、batch size=1、gradient accumulation=8、learning rate=`5e-6`，本机使用 bf16 计算。正式运行完成 600 个 optimizer steps，DPO train loss 为 0.6273，最终 DPO eval loss 为 0.6037，峰值 CUDA allocated 约 3.94 GB。完整记录见 [`reports/dpo-v1.md`](reports/dpo-v1.md)。
+
+在隔离的 240 条 CMB val 上，SFT 与 DPO 都是 121/240（50.42%）；232/240 条预测相同，仅 8 条发生变化，其中 SFT→DPO 一条由错变对、一条由对变错。DPO 的 reward margin 在最后一次记录为 0.1947、reward accuracy 为 0.865，说明偏好训练目标确实被优化，但在当前“只输出选择题字母”的窄任务上没有带来验证集准确率提升。后续若要证明 DPO 的真实价值，需要合法授权的人类/专家偏好数据、开放式回答或安全拒答偏好对、独立评测集和人工质量评审。
+
+## 当前阶段：公开偏好数据 DPO v2（首轮正式实验已完成）
+
+为验证 DPO v1 的“随机错误选项”负例是否过于简单，本阶段接入公开的 [TsinghuaC3I/UltraMedical-Preference](https://huggingface.co/datasets/TsinghuaC3I/UltraMedical-Preference)。固定 revision、文件哈希、许可证边界和筛选规则见 [`data/sources/ultramedical-preference.yaml`](data/sources/ultramedical-preference.yaml) 与 [`reports/dpo-v2-public-data-audit.md`](reports/dpo-v2-public-data-audit.md)。公开数据是英文，且偏好判断不应默认等同于医生标注；因此本阶段把它作为公开数据工程实验，不宣称临床对齐能力。
+
+当前只下载了 `dev.json` 和 `test.json`，没有下载 994 MB 的 `train.json`。`dev.json` 的 2,232 条样本先要求 `chosen_score > rejected_score`，再按 prompt id 去重，得到 2,074 条候选；固定抽取 2,000 条，切成 1,800 条 DPO train 与 200 条内部 eval。`test.json` 中仅保留 `label_type=human` 的 163 条作为外部偏好评测，训练与该集合的归一化题干重叠为 0。原始数据和派生 JSONL 只保存在本地被忽略目录，不上传 GitHub。
+
+```powershell
+python scripts/prepare_public_dpo.py `
+  --seed 42 `
+  --max-train-pairs 2000 `
+  --eval-size 200
+
+python scripts/train_dpo.py `
+  --config configs/dpo-ultramedical.yaml `
+  --output-dir outputs/dpo-ultramedical-smoke `
+  --max-train-samples 16 `
+  --max-eval-samples 4 `
+  --local-files-only
+
+# 正式可完成配置：448 train、64 eval、512 token
+python scripts/train_dpo.py `
+  --config configs/dpo-ultramedical-v2.yaml `
+  --local-files-only
+
+python scripts/evaluate_preference.py `
+  --input data/processed/public-dpo/ultramedical-v1/human_eval.jsonl `
+  --output outputs/dpo-ultramedical-v1/sft-human-preference-v1.json `
+  --adapter outputs/qlora-cmb-v1 `
+  --max-length 1024 `
+  --max-prompt-length 384 `
+  --local-files-only
+```
+
+1024 token 上限的 16/4 smoke 训练与评估均成功，峰值 CUDA allocated 约 7.76 GB；因此正式实验改用 512 条候选中的 448 train、64 eval、512 token 上限，完成 56 个 optimizer steps，train loss=0.6822、eval loss=0.6760、峰值 CUDA allocated 约 4.88 GB。
+
+正式对照结果见 [`reports/dpo-v2-public-data-audit.md`](reports/dpo-v2-public-data-audit.md)：在 163 条未参与训练的 human preference holdout 上，SFT 与 DPO v2 在 512 token 口径下都是 57/163（34.97%）；在 1024 token 敏感性评测下都是 56/163（34.36%）。在隔离 CMB val 上，SFT 为 121/240（50.42%），public DPO v2 为 118/240（49.17%），因此本轮没有证明公开英文偏好数据带来收益，并出现轻微中文任务负迁移。这个结果作为 DPO 消融和失败分析保留，不把 DPO adapter 宣传成主模型。
+
+## 当前阶段：CMB train-only hard-negative DPO（正式实验已完成）
+
+为了减少 DPO v1 中“随机错误选项”过于简单的问题，本阶段仍只使用本地 CMB-Exam train split，但让已有 SFT adapter 对每道题的所有选项计算条件 log-probability：`chosen` 固定为参考答案，`rejected` 选择“模型分数最高的错误选项”。这不是人类偏好标注，而是从模型真实混淆边界生成的可审计 hard negative；240 条 CMB val 全程隔离，原始数据和派生偏好 JSONL 不上传 GitHub。实现见 [`src/qwen_medical_qa/hard_negative_data.py`](src/qwen_medical_qa/hard_negative_data.py)、[`scripts/prepare_hard_negative_dpo.py`](scripts/prepare_hard_negative_dpo.py) 和 [`configs/dpo-cmb-hard-negative-v1.yaml`](configs/dpo-cmb-hard-negative-v1.yaml)。
+
+```powershell
+python scripts/prepare_hard_negative_dpo.py `
+  --input data/processed/cmb-exam-v1/train.jsonl `
+  --output-dir data/processed/cmb-hard-negative-v1 `
+  --adapter outputs/qlora-cmb-v1 `
+  --eval-size 200 `
+  --local-files-only
+
+# 先用 16/4 条完成 smoke
+python scripts/train_dpo.py `
+  --config configs/dpo-cmb-hard-negative-v1.yaml `
+  --output-dir outputs/dpo-cmb-hard-negative-smoke `
+  --max-train-samples 16 `
+  --max-eval-samples 4 `
+  --local-files-only
+
+# 正式训练
+python scripts/train_dpo.py `
+  --config configs/dpo-cmb-hard-negative-v1.yaml `
+  --output-dir outputs/dpo-cmb-hard-negative-v1 `
+  --local-files-only
+```
+
+5,000 条 train 样本全部生成偏好对，按 seed=42 固定为 4,800 train、200 eval。SFT 模型在 train 上有 1,288 条预测错误；这 1,288 条中 rejected 都是模型自己的 top choice，说明 hard negative 确实覆盖了当前模型的混淆边界。数据审计显示 train/eval 无交集、与 val 无 ID 交集、无重复、chosen/rejected 均不同；CMB 中存在少量 3/4/6 选项题，因此实现使用动态选项数而不是写死五选一。
+
+正式训练使用 Qwen3-1.7B、已有 CMB QLoRA/SFT adapter、4-bit NF4、LoRA、bf16、`beta=0.1`、1 epoch、600 optimizer steps。最终 train loss=0.6636、DPO eval loss=0.6553、eval reward accuracy=0.740、reward margin=0.0804，峰值 CUDA allocated 约 3.94 GB。独立 CMB val 上 hard-negative DPO 为 120/240（50.00%），SFT 为 121/240（50.42%）；230/240 条预测相同，10 条变化，其中 2 条由对变错、1 条由错变对。结论是：hard negative 让 DPO 训练目标得到可审计的优化，但在当前“中文选择题、只输出字母”的窄任务上没有带来泛化提升，反而出现 1 道题的轻微负迁移，不能将其宣传成医疗能力提升。完整审计、哈希、训练指标和面试表述见 [`reports/dpo-cmb-hard-negative-v1.md`](reports/dpo-cmb-hard-negative-v1.md)。
+
+## 当前阶段：CMB train-only GRPO v0（正式实验已完成）
+
+本阶段用 GRPO 验证另一条训练路线：不构造 `chosen/rejected` 偏好对，而是让模型对同一道 CMB 选择题生成 4 个候选答案，并用可计算的任务奖励比较它们。奖励由两部分组成：选项字母与参考答案 exact-match 得分 1.0；输出是否恰好是一个合法选项字母的格式得分乘以 0.2。这个奖励适合当前闭域选择题的工程验证，但不能代表开放式医学质量或临床安全性。
+
+GRPO 只读取本地 CMB-Exam train split 5,000 条，固定切分为 4,800 条 train 和 200 条 GRPO eval，seed=42；最终 240 条 CMB val 与 GRPO 数据 ID 交集为 0，没有参与生成、训练或内部 eval。实现见 [`src/qwen_medical_qa/grpo_data.py`](src/qwen_medical_qa/grpo_data.py)、[`scripts/prepare_grpo.py`](scripts/prepare_grpo.py)、[`scripts/train_grpo.py`](scripts/train_grpo.py) 和 [`configs/grpo-cmb-v0.yaml`](configs/grpo-cmb-v0.yaml)。
+
+```powershell
+python scripts/prepare_grpo.py `
+  --input data/processed/cmb-exam-v1/train.jsonl `
+  --output-dir data/processed/cmb-grpo-v1 `
+  --eval-size 200 `
+  --seed 42
+
+python scripts/train_grpo.py `
+  --config configs/grpo-cmb-v0.yaml `
+  --output-dir outputs/grpo-cmb-v0 `
+  --local-files-only
+
+python scripts/run_baseline.py `
+  --model Qwen/Qwen3-1.7B `
+  --adapter outputs/grpo-cmb-v0 `
+  --input data/processed/cmb-exam-v1/val.jsonl `
+  --output outputs/eval-cmb-val-grpo-v0.jsonl `
+  --max-new-tokens 4 `
+  --greedy `
+  --deterministic
+
+python scripts/evaluate_benchmark.py `
+  --input outputs/eval-cmb-val-grpo-v0.jsonl `
+  --output outputs/eval-cmb-val-grpo-v0.metrics.json
+```
+
+正式训练从已有 `outputs/qlora-cmb-v1` SFT adapter 初始化，使用冻结的同一 SFT adapter 作为参考策略；配置为 4-bit NF4、LoRA、bf16、4 generations、`loss_type=grpo`、`beta=0.04`、learning rate=`5e-7`、600 optimizer steps。训练耗时约 27.4 分钟，train loss=`2.95e-5`，第 600 步 GRPO eval 的 exact-match reward mean=`0.6225`、format reward mean=`1.0`、KL=`3.65e-4`，峰值 CUDA allocated 约 2.04 GB。
+
+在完全相同的 prompt、greedy、deterministic 和 240 条 CMB val 口径下：
+
+| 模型 | 正确/总数 | Accuracy |
+| --- | ---: | ---: |
+| Qwen3-1.7B base | 107/240 | 44.58% |
+| QLoRA/SFT | 121/240 | 50.42% |
+| DPO v1 | 121/240 | 50.42% |
+| public DPO v2 | 118/240 | 49.17% |
+| hard-negative DPO | 120/240 | 50.00% |
+| GRPO v0 | 122/240 | 50.83% |
+
+GRPO 相对 SFT 有 233/240 条预测相同，7 条变化：1 条从正确变错、2 条从错误变对，净增加 1 道题（+0.42 个百分点）；相对 hard-negative DPO 有 2 条从错误变对且没有反向退化。这个提升幅度很小，且当前只跑了单 seed、单一奖励和单一闭域 benchmark，因此只能说 GRPO v0 在本实验上取得了轻微正向结果，不能包装成稳定的医疗能力提升。完整训练日志、数据哈希、漂移矩阵和面试表述见 [`reports/grpo-cmb-v0.md`](reports/grpo-cmb-v0.md)。
 
 ## 当前阶段：RAG v0
 
@@ -243,6 +408,20 @@ python scripts/run_rag_qa.py `
   --greedy `
   --local-files-only
 ```
+
+## 当前阶段：Constitutional AI-inspired v0
+
+本阶段在已有安全拒答 v0 的基础上，增加一个可审计的“原则 → 批评 → 修订 → 再批评”闭环。原则版本为 `medical-safety-v1`，包括：不做个人诊断或处方、不在缺少依据时编造确定结论、避免绝对化承诺、不索取身份/病历/住址等敏感信息，以及拒答时给出清晰的限制说明和安全下一步。
+
+当前实现是 deterministic v0：批评器使用透明规则，修订器使用固定安全模板；它不是让 Qwen 自己生成 critique 的完整 Constitutional AI，也没有调用外部模型 API。这样做的目的，是先把原则版本、违规证据、修订前后结果和失败样本固定下来，为后续 model-in-the-loop v1 留出可替换接口。
+
+评测使用 12 条本地合成样本，不使用真实医疗数据。8 条初始回答触发原则违规，经过修订后 0 条仍违规，8/8 修订成功；两组期望标签准确率均为 1.0。这些结果只说明规则在这组小型合成 benchmark 上可运行，不能解释为医疗安全保证。
+
+```powershell
+python scripts/run_constitutional.py
+```
+
+实现见 [`src/qwen_medical_qa/constitutional.py`](src/qwen_medical_qa/constitutional.py)、[`scripts/run_constitutional.py`](scripts/run_constitutional.py)、[`configs/constitutional-ai-v0.yaml`](configs/constitutional-ai-v0.yaml) 和 [`data/constitutional/benchmark-v1.jsonl`](data/constitutional/benchmark-v1.jsonl)；完整结果与面试表述见 [`reports/constitutional-ai-v0.md`](reports/constitutional-ai-v0.md)。
 
 真实知识库接入前，先复制 [`data/sources/rag-knowledge-base.template.yaml`](data/sources/rag-knowledge-base.template.yaml)，补齐来源、版本、许可证、隐私和专家审核字段；模板本身不代表任何真实数据已经获准使用。
 

@@ -1,0 +1,8 @@
+principle_version: medical-safety-v1
+input: data/constitutional/benchmark-v1.jsonl
+output: outputs/constitutional-v0/results.jsonl
+summary: outputs/constitutional-v0/summary.json
+critic: deterministic_constitution_rules
+reviser: deterministic_safe_revision_templates
+raw_medical_data_used: false
+external_model_api_used: false

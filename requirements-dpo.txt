@@ -1,0 +1,3 @@
+# Install after requirements-baseline.txt, requirements-data.txt, and requirements-qlora.txt.
+# Install a CUDA-enabled PyTorch build separately according to the local CUDA setup.
+trl==0.29.1

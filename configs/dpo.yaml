@@ -1,0 +1,32 @@
+model_name: Qwen/Qwen3-1.7B
+sft_adapter_dir: outputs/qlora-cmb-v1
+train_file: data/processed/cmb-exam-v1/dpo_train.jsonl
+validation_file: data/processed/cmb-exam-v1/dpo_eval.jsonl
+output_dir: outputs/dpo-cmb-v1
+seed: 42
+max_length: 512
+max_prompt_length: 384
+beta: 0.1
+loss_type: sigmoid
+num_train_epochs: 1
+per_device_train_batch_size: 1
+per_device_eval_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 0.000005
+optim: paged_adamw_8bit
+warmup_ratio: 0.03
+logging_steps: 10
+save_steps: 100
+eval_steps: 100
+save_total_limit: 2
+gradient_checkpointing: true
+# TRL/PEFT converts the QLoRA adapter to bf16 on this CUDA setup.
+fp16: false
+bf16: true
+report_to: none
+local_files_only: false
+quantization:
+  load_in_4bit: true
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_compute_dtype: float16
+  bnb_4bit_use_double_quant: true

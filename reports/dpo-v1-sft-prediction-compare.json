@@ -1,0 +1,13 @@
+{
+  "left_file": "outputs\\qlora-cmb-v1-val-full.jsonl",
+  "right_file": "outputs\\dpo-cmb-v1-val.jsonl",
+  "total": 240,
+  "same_prediction": 232,
+  "different_prediction": 8,
+  "left_invalid": 0,
+  "right_invalid": 0,
+  "both_correct": 120,
+  "both_wrong": 118,
+  "left_correct_right_wrong": 1,
+  "left_wrong_right_correct": 1
+}

@@ -1,0 +1,34 @@
+dataset_id: TsinghuaC3I/UltraMedical-Preference
+upstream:
+  huggingface: https://huggingface.co/datasets/TsinghuaC3I/UltraMedical-Preference
+  github: https://github.com/TsinghuaC3I/UltraMedical
+  paper: https://proceedings.neurips.cc/paper_files/paper/2024/file/2dfc26ce9039f00eee4aba0c54931e46-Paper-Datasets_and_Benchmarks_Track.pdf
+declared_license: MIT
+language: en
+task: medical response preference modeling
+fixed_revision: 761eb7935310ba662a96d93c5af342e5269d5759
+audited_files:
+  dev:
+    path: data/dev.json
+    rows: 2232
+    bytes: 20238420
+    sha256: 4f6b0a1350f2664caeefd2d628eae992ba732d475138fcdbe2657a25f70f9269
+  test:
+    path: data/test.json
+    rows: 777
+    bytes: 5564425
+    sha256: 38f21a20407a401d55c1a0939f436ac1c2d5216bec31c126a55d7ed0f2c9d251
+selection_policy:
+  train_source: dev.json
+  train_requires_chosen_score_gt_rejected_score: true
+  train_deduplicate_by_prompt_id: true
+  train_max_pairs: 2000
+  human_evaluation_source: test.json
+  human_evaluation_label_type: human
+  human_evaluation_is_not_used_for_training: true
+  raw_and_derived_data_committed_to_github: false
+limitations:
+  - Dataset responses and preference labels are not all physician annotations.
+  - The chosen/rejected data may contain synthetic or model-assisted judgments.
+  - The public data is English while the main CMB task is Chinese multiple choice.
+  - Re-check upstream license and provenance before redistribution or commercial use.
