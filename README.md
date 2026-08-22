@@ -112,7 +112,7 @@ v1.1 使用 24 个场景族生成 120 条本地合成 benchmark，违规与安�
 ### 安装依赖
 
 ~~~powershell
-git clone https://github.com/cartonmouse/qwen-medical-qa.git medlattice
+git clone https://github.com/cartonmouse/medlattice.git medlattice
 cd medlattice
 
 python -m pip install -r requirements-baseline.txt
