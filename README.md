@@ -1,5 +1,9 @@
 <div align="center">
-  <img src="assets/medlattice-icon.png" alt="MedLattice icon" width="112">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/medlattice-icon-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="assets/medlattice-icon.png">
+    <img src="assets/medlattice-icon.png" alt="MedLattice icon" width="112">
+  </picture>
 
   <h1>MedLattice</h1>
 
