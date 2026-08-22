@@ -4,7 +4,7 @@
 
 在固定的 CMB-Exam v1 单项选择题子集上，完成一轮可复现的 QLoRA 训练，并用同一验证集、同一 prompt 和同一解码参数比较 Qwen3-1.7B 基础模型与 LoRA 适配器的 exact-match 表现。
 
-本实验用于验证工程链路和面试复盘，不代表医疗能力评估，也不构成诊断、治疗或其他医疗建议。
+本实验用于验证工程链路和结果对照，不代表医疗能力评估，也不构成诊断、治疗或其他医疗建议。
 
 ## 2. 数据与任务口径
 
@@ -99,8 +99,8 @@ python scripts/evaluate_benchmark.py `
 
 训练摘要：`outputs/qlora-cmb-v1/run_summary.json`。逐题评测结果：`reports/qwen3-base-val-full.json` 和 `reports/qlora-cmb-v1-val-full.json`。
 
-## 7. 面试复盘结论与局限
+## 7. 结论与局限
 
-可以这样概括本阶段：先用 Qwen3-1.7B 做统一 prompt 的基线，再将 CMB-Exam 清洗为可控的单项选择任务；训练时采用 4-bit NF4 基座和 LoRA，只更新 0.5040% 的参数；最后用同一验证集做逐题 exact-match 对照，并记录错误迁移，而不是只汇报 loss。
+本阶段结论：先用 Qwen3-1.7B 做统一 prompt 的基线，再将 CMB-Exam 清洗为可控的单项选择任务；训练时采用 4-bit NF4 基座和 LoRA，只更新 0.5040% 的参数；最后用同一验证集做逐题 exact-match 对照，并记录错误迁移，而不是只汇报 loss。
 
 主要局限：训练集只使用 5,000 条子集，训练仅 1 epoch，没有做超参搜索或多随机种子实验；验证任务是选择题字母匹配，不能替代开放式医疗问答质量、安全性和临床有效性评估。后续需要把 RAG、DPO、服务化和更严格的安全评测与当前结果分开记录。

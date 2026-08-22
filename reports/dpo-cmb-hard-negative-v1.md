@@ -4,7 +4,7 @@
 
 DPO v1 使用“参考答案 + 随机错误选项”构造偏好对，能够验证训练链路，但随机错误选项可能过于容易。本阶段尝试用已有 CMB QLoRA/SFT adapter 的选项级条件 log-probability 选择 hard negative：对每道题，`chosen` 仍是数据参考答案，`rejected` 是模型分数最高的错误选项。
 
-本实验只服务于机器学习工程学习和面试复盘，不代表医疗能力、临床安全性或医生偏好。hard negative 来自模型自身，不是人类或临床专家标注。
+本实验只服务于机器学习工程验证，不代表医疗能力、临床安全性或医生偏好。hard negative 来自模型自身，不是人类或临床专家标注。
 
 ## 2. 数据与隔离设计
 
@@ -108,20 +108,6 @@ policy 从 `outputs/qlora-cmb-v1` 初始化，reference policy 是冻结副本�
 5. 选择题 hard negative 不能覆盖开放式回答质量、医学事实性、拒答边界、引用忠实性和安全性。
 
 因此本阶段的准确说法是：hard-negative DPO 工程链路成功，DPO 内部偏好指标为正，但独立 CMB val 没有观察到收益，并出现轻微负迁移。不能说“DPO 无效”，也不能说“DPO 提升了医疗能力”。
-
-## 7. 面试回答模板
-
-### 为什么用 hard negative？
-
-“DPO v1 的 rejected 是随机错误选项，可能太容易。于是我让已有 SFT adapter 对每道题的所有候选选项计算条件 log-probability，并从错误选项中选分数最高的一个作为 rejected。这样负例来自模型真实混淆边界，能检验 DPO 是否学习更细的相对偏好。但它仍然是模型生成的合成偏好，不是医生标注。”
-
-### 最后有提升吗？
-
-“没有。训练内部 final eval reward accuracy 是 0.740、margin 是 0.0804，说明 policy 拟合了 hard-negative pair；但固定的 CMB val 上 SFT 是 121/240，hard-negative DPO 是 120/240，230 条预测不变，2 条由对变错、1 条由错变对。因此我把它保留为有完整审计和失败分析的消融，而不是包装成主模型提升。”
-
-### 下一步做什么？
-
-“如果目标是继续研究训练方法，我会把 GRPO 做成可验证奖励的最小实验：模型生成选项字母，奖励函数只检查格式和答案 exact-match，先做短 smoke，再用独立 val 比较。它与 DPO 的差别是直接用 group-relative reward 更新 policy，而不是依赖 chosen/rejected pair；仍然要防止奖励过窄和过拟合。”
 
 ## 8. 复现入口
 

@@ -21,7 +21,7 @@ content_boundary:
   includes_patient_data: false
   deidentification_status: not-applicable-or-reviewed
   expert_review_status: pending
-  allowed_use: research-and-interview-demo-only
+  allowed_use: research-and-development-demo-only
 
 processing:
   source_revision: replace-with-commit-or-checksum

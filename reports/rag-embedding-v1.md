@@ -89,10 +89,6 @@ python scripts/evaluate_rag.py `
 
 单元测试：22 个通过，其中包含 dense retriever 的排序、min-score 过滤和 index round-trip 测试。
 
-## 6. 面试复盘
-
-可以这样回答：“RAG v0 我先做了一个标准库 TF-IDF baseline，保证数据和评测链路透明；然后在同一基准上接入 BGE 中文 embedding。编码器负责模型加载、query instruction、CLS pooling 和归一化，retriever 只负责向量索引和 cosine 排序。两者在 5 条演示查询上都是 Hit@1=1.0，但这只能说明 pipeline 正常，不能证明 embedding 在真实医学语料上更好，所以我保留了 TF-IDF 作为回归基线。”
-
 ## 7. 局限与下一步
 
 1. 当前知识库仍是 5 条合成文档，必须换成来源、版本、许可证清晰的医学资料；

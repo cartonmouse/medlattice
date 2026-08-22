@@ -2,7 +2,7 @@
 
 ## 1. 项目定位
 
-本项目是一个面向学习和面试展示的中文医疗问答实验系统，围绕 Qwen3-1.7B 逐步完成了基线、QLoRA/SFT、RAG、DPO、GRPO 和 Constitutional AI-inspired 安全层实验。
+本项目是一个面向中文医疗问答模型工程实验的中文医疗问答实验系统，围绕 Qwen3-1.7B 逐步完成了基线、QLoRA/SFT、RAG、DPO、GRPO 和 Constitutional AI-inspired 安全层实验。
 
 项目的目标不是构建临床系统，而是验证一条可解释、可评测、可复现的模型工程链路，并对没有提升的实验给出可审计的失败分析。仓库不包含真实患者数据、原始医疗数据、完整模型权重或 API 密钥。
 
@@ -120,7 +120,7 @@ python scripts/run_constitutional_v1.py `
 
 ## 5. 项目完成标准
 
-从简历和面试项目角度，满足以下条件即可把当前版本视为完成：
+当前版本满足以下项目完成标准：
 
 1. 固定 benchmark、数据来源、划分方式和泄漏控制规则已经记录；
 2. 基线、SFT、DPO、GRPO、RAG 和安全层都有代码、配置、结果和限制说明；
@@ -128,15 +128,11 @@ python scripts/run_constitutional_v1.py `
 4. RAG 生成链路能够输出引用，安全层能够执行审查和兜底；
 5. 单元测试和 UTF-8 文件校验通过；
 6. GitHub 仓库不上传真实医疗数据、模型权重、缓存和密钥；
-7. 面试时能够解释成功实验、失败实验、指标口径和下一步改进方向。
+7. 成功实验、失败实验、指标口径和下一步方向均有记录。
 
 完成这些条件后，继续增加 PPO、GRPO seed、DPO 数据或服务化属于二期研究，不是当前项目的必需条件。
 
-## 6. 面试版项目总结
-
-> 我基于 Qwen3-1.7B 搭建了一个可复现的中文医疗问答实验系统，先用 CMB-Exam 建立隔离基线，再通过 QLoRA/SFT、DPO 和 GRPO 做训练目标对照，并实现了 BGE dense retrieval、引用生成和 Constitutional AI-inspired 安全门。SFT 在 240 条 CMB val 上从 44.58% 提升到 50.42%；DPO 没有带来提升，GRPO 仅获得单题净增，因此我保留了失败分析而没有夸大效果。安全层在 120 条合成分层基准上，模型 critic recall 为 1.0，但 revision 在 challenge 场景较弱，最终采用模型审查加确定性 hard gate 的混合架构，并完成了逐条审计和本地端到端演示。
-
-## 7. 限制
+## 6. 限制
 
 - CMB exact-match 只衡量选择题选项是否匹配，不能代表开放式医疗能力；
 - CMB train-only RAG 检索的是已解答考试例题，不是经过专家审核的医学知识库；

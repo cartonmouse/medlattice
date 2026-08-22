@@ -2,7 +2,7 @@
 
 ## 1. 实验定位
 
-本阶段使用已经有来源记录的 CMB-Exam `train` split，构建一个本地、闭域的“已解答训练例题检索”实验。它不是通用医学知识库，也不是临床问答系统；实验结果只用于学习 RAG 工程、数据泄漏控制和面试复盘。
+本阶段使用已经有来源记录的 CMB-Exam `train` split，构建一个本地、闭域的“已解答训练例题检索”实验。它不是通用医学知识库，也不是临床问答系统；实验结果只用于验证 RAG 工程和数据泄漏控制。
 
 原始 CMB 数据、处理后的 split、派生语料和向量索引均保留在本地忽略目录，不提交到 GitHub。来源与许可证声明见 [`data/sources/cmb-exam.yaml`](../data/sources/cmb-exam.yaml)，当前声明为 Apache-2.0，公开使用前仍需重新核验上游版本和许可证。
 
@@ -123,20 +123,7 @@ python scripts/evaluate_benchmark.py `
 
 去掉 BM25 的对照只需将 `--reranker bm25` 改成 `--reranker none`，并把输出文件名改为 `retrieval-dense.jsonl`。
 
-## 6. 面试表述
-
-可以这样概括本阶段：
-
-> 我先把有许可证记录的 CMB-Exam train split 转成“已解答训练例题”检索库，做题干与选项级去重，并删除 train/val 重叠，避免把验证题直接检索出来。然后用 BGE 做 dense 召回，SQLite 做本地持久化，比较不加 reranker 和加入 BM25 的两阶段检索，最后让未加载 QLoRA adapter 的 Qwen3-1.7B 依据 top-3 例题只输出选项字母。在 240 条 val 上，直接基线是 44.58%，dense-only 是 46.25%，dense+BM25 本次重跑是 47.92%；但重跑出现 112 与 115 的波动，所以我把它定位为工程链路验证，而不是稳定的医学能力提升。
-
-追问时要主动说明：
-
-1. 这不是通用医学知识 RAG，因为检索文本本身含有 CMB 训练例题的参考答案；它验证的是闭域 exam-example retrieval，不能声称提升临床事实准确率。
-2. 当前没有相关文档 gold label，因此不报告 Recall@k；要评估检索器，需要额外人工标注或可审计的相关性协议。
-3. QLoRA 改变的是模型参数/行为，RAG 改变的是推理时可访问的外部上下文；本实验故意使用 base Qwen，以便把两个变量分开。
-4. SQLite dense scan 不是生产级 ANN；下一步才是 FAISS/Milvus/Chroma、神经 reranker、端到端 P95、缓存和服务化。
-
-## 7. 限制与下一步
+## 6. 限制与下一步
 
 - 语料是考试训练例题，不是经过专家审核的临床指南；不得用于诊断、治疗或患者决策。
 - 训练文档包含参考答案，可能诱导模型复制相似题的答案或受到错误相似题干扰。

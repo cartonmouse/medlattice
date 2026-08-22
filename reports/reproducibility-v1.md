@@ -61,8 +61,6 @@ python scripts/compare_predictions.py `
   --right outputs/cmb-rag-v1/rag-deterministic-val.jsonl
 ```
 
-## 5. 面试解释与限制
-
-可以这样解释：“我发现只设置 seed 不能自动保证 CUDA 推理逐题一致，所以增加了统一 reproducibility manifest 和 `--deterministic` 开关；同时写了 prediction drift 工具，比较两次运行的样本 ID、答案漂移和迁移矩阵。8 条 smoke 两次完全一致，全量 deterministic 结果与最新 BM25 结果 240 条一致。”
+## 5. 复现结论与限制
 
 这仍不是跨机器、跨驱动、跨 PyTorch 版本的绝对复现保证。当前 `warn_only=True` 会在遇到不支持确定性的算子时给出可见警告而不强制终止；还需要锁定 Python/CUDA/PyTorch/Transformers 版本、记录硬件和模型 revision，并用多 seed 报告均值与方差。确定性开关也可能牺牲吞吐，不能直接当作生产默认配置。

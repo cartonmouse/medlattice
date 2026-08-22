@@ -102,8 +102,6 @@ python scripts/compare_retrievals.py `
   --top-k 3
 ```
 
-## 7. 面试表达与限制
-
-可以这样回答：“我先用 SQLite 做透明的 O(N) reference backend，验证 metadata、向量格式和 reranker 接口；当数据规模扩大后，再加一个可选 FAISS HNSW 后端。两者在 4,984 条 CMB 文档上 top-3 排名高度一致，FAISS search 平均约 0.24 ms，而 SQLite scan 约 496 ms；最终 240 条生成答案完全一致。这样可以把‘检索正确性回归’和‘后端性能优化’分开。”
+## 7. 结论与限制
 
 当前 FAISS 是 CPU HNSW，不是 GPU FAISS，也没有在百万级语料或并发服务下压测。HNSW 的 M、efConstruction、efSearch 仍需在更大、带 gold label 的数据上调参；下一步才是 FAISS IVF/PQ、Milvus/服务化、端到端 P95、缓存和神经 reranker。

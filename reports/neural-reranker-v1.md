@@ -15,7 +15,7 @@
 - `score_fn` 是一个内部测试 seam，可以在不下载大模型的情况下验证排序、空候选、参数校验和异常路径；
 - `retrieve_faiss.py`、`retrieve_vector_store.py` 和 `run_rag_qa.py` 均支持：
   `--reranker {none,bm25,neural}`、`--reranker-model`、`--reranker-device`、`--reranker-batch-size` 和 `--reranker-max-length`；
-- 输出额外记录 reranker model、device、batch size、max length 和 score type，方便面试时解释一次运行到底使用了什么配置。
+- 输出额外记录 reranker model、device、batch size、max length 和 score type，方便复现实验时核对一次运行到底使用了什么配置。
 
 ## 3. 本地验证
 
@@ -79,8 +79,6 @@ FAISS+BM25 与 FAISS+neural 的 top-3 完整排名仅 4/240 条完全一致，to
 
 本次生成阶段的 Qwen 平均生成延迟为 202.46 ms（P95 256.41 ms），BM25 对照为 244.07 ms（P95 331.38 ms）；这部分受 prompt 长度和 GPU 状态影响，不能抵消 neural 额外的约 304 ms/query 重排成本。两种配置 invalid 均为 0。
 
-## 6. 面试表达与限制
+## 6. 结论与限制
 
-可以这样回答：“dense retriever 负责从大语料中召回候选，Cross-Encoder 再把 query 和候选文本拼成 pair 做精排。为了控制成本，我把 candidate-k 和 final top-k 分开，先只对小候选集运行 reranker；接口保留了原始 dense 分数，输出还记录模型、设备和 batch 配置。BM25 是无额外模型依赖的 baseline，神经 reranker 是可选 adapter，便于做可解释的消融。”
-
-这次实验还说明：不能因为神经模型更复杂就默认效果更好。当前 neural reranker 的效果低于 BM25，且额外引入明显重排延迟；在有人工相关性标注、更多 candidate-k、领域负样本或 reranker 微调之前，不应在简历中声称“神经 reranker 提升了准确率”。
+这次实验还说明：不能因为神经模型更复杂就默认效果更好。当前 neural reranker 的效果低于 BM25，且额外引入明显重排延迟；在有人工相关性标注、更多 candidate-k、领域负样本或 reranker 微调之前，不应声称“神经 reranker 提升了准确率”。

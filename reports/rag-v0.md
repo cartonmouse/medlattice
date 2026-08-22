@@ -102,10 +102,6 @@ python scripts/evaluate_rag.py `
 - `data/rag_demo/retrieval_benchmark.jsonl`
 - `tests/test_rag.py`
 
-## 6. 面试复盘
-
-本阶段可以这样回答：“我没有一开始就接向量数据库，而是先用标准库实现了一个确定性的 TF-IDF 检索 baseline，把文档 schema、chunk overlap、索引持久化、top-k 结果、引用编号和 Recall/MRR 评测链路跑通。这样后续替换成 embedding retriever 时，能够在同一批标注查询上做公平对照。当前结果只是在 5 条合成演示查询上的 100% 命中，不代表真实医疗知识库效果。”
-
 ## 7. 局限与下一步
 
 1. 替换合成文档为有明确来源、版本和许可证的医学资料；

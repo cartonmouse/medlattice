@@ -104,9 +104,3 @@ smoke 的意义是证明真实 model-in-the-loop 接口可运行，不是统计�
 - deterministic hard gate 能把剩余风险拦住，但它仍可能过度拒答，且规则覆盖有限。
 
 局限包括：benchmark 只有 12 条、由项目设计者构造，没有独立专家标注；模型 critic 与 reviser 使用同一个 Qwen，可能共享错误；提示词和模型版本变化可能影响结果；没有评估开放式事实性、引用忠实性、帮助性或用户体验；最终安全通过率不能外推为医疗安全率。
-
-## 8. 面试表述
-
-可以这样回答：
-
-> 我在规则版 Constitutional AI 基线之上实现了 model-in-the-loop 链路：Qwen 先生成结构化 JSON critique，再依据 critique 修订回答，最后用 deterministic constitution 做 fail-closed hard gate。12 条受控合成样本上，模型 critic 识别 8/8 条初始违规，模型 revision 单独修复 6/8，剩余 2 条由规则兜底，所以最终 12/12 通过。这个结果说明批评和修订链路可运行，但不能把最终 100% 归因于模型，也不能解释成临床安全保证。下一步需要加入独立专家标签、对抗改写、开放式事实性和帮助性评测，再比较规则 critic、模型 critic 和人工复核。

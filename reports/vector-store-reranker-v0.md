@@ -113,20 +113,6 @@ python scripts/run_rag_qa.py `
   --local-files-only
 ```
 
-## 7. 面试复盘
-
-可以这样回答：“我把检索拆成 candidate generation 和 reranking 两层。BGE 负责语义召回 top-5，BM25 只在小候选集上做词项匹配重排，最后取 top-3 进入 prompt。存储层先用 SQLite 把 chunk 元数据和归一化向量持久化，保存了模型、维度和度量信息；这样可以先验证接口和结果可复现，再替换成 ANN/vector DB。当前 5 条合成问题上三组指标都为 1.0，说明链路正确，但因为目标文档本来就是第一名，不能声称 BM25 有真实收益。”
-
-高频追问：
-
-**为什么不直接上 Milvus 或 FAISS？**
-
-当前只有 5 个 chunk，使用生产级 ANN 会把部署依赖、索引参数和检索逻辑混在一起。SQLite reference backend 更容易验证序列化、元数据和结果一致性。真实知识库规模上升后，再用同一接口替换 ANN 后端并比较 Recall、延迟、内存和构建时间。
-
-**为什么 dense retrieval 后还要 reranker？**
-
-dense embedding 擅长较宽的语义召回，但候选之间可能存在词义相近、实体或数值差异；reranker 可以在较小候选集上使用更细粒度匹配。代价是额外延迟，所以需要用标注 benchmark 证明收益。
-
 ## 8. 局限与下一步
 
 1. 扩大到有来源的医学资料和 paraphrase/跨段落/资料不足 benchmark；
