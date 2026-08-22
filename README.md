@@ -1,52 +1,63 @@
-# Qwen Medical QA
+<div align="center">
+  <img src="assets/medlattice-icon.png" alt="MedLattice icon" width="112">
 
-一个面向中文医疗问答的可复现模型工程实验系统，围绕 Qwen3-1.7B 搭建从监督微调、偏好优化、检索增强生成到安全控制的完整实验链路。
+  <h1>MedLattice</h1>
 
-> 本项目用于模型工程实验与技术验证，不是医疗诊断或治疗系统。项目中的评测结果不能替代医生判断，也不能解释为临床安全性或医疗准确率。
+  <p><strong>可复现的中文医疗问答模型工程系统</strong></p>
 
-## 项目简介
+  <p>
+    将 Qwen3-1.7B、参数高效微调、检索增强生成与安全控制组织成一条可审计的本地实验链路。
+  </p>
 
-本项目关注中文医疗问答场景中的以下工程问题：
+  <p>
+    <a href="#快速开始">快速开始</a> ·
+    <a href="#核心结果">核心结果</a> ·
+    <a href="#系统架构">系统架构</a> ·
+    <a href="#实验报告">实验报告</a>
+  </p>
+</div>
 
-- 如何建立可复现的基础模型评测与数据处理流程；
-- 如何使用 QLoRA/SFT、DPO 和 GRPO 对训练目标进行对照；
-- 如何组合 dense retrieval、BM25、向量存储和 reranker 构建 RAG；
-- 如何让生成结果携带可审计的引用信息；
-- 如何通过 Constitutional AI-inspired critic 和确定性 hard gate 处理高风险回答；
-- 如何记录数据版本、随机种子、预测漂移、延迟和失败样本。
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/PyTorch-QLoRA%20%7C%20GRPO-EE4C2C?logo=pytorch&logoColor=white" alt="PyTorch">
+  <img src="https://img.shields.io/badge/RAG-BGE%20%7C%20FAISS%20%7C%20BM25-315E9B" alt="RAG">
+  <img src="https://img.shields.io/badge/Status-local%20reproducible%20experiment-147D78" alt="Project status">
+</p>
 
-项目重点是把每个阶段拆分为独立的代码、配置、评测指标和实验报告，并明确区分有效提升、无明显收益和失败的实验结果。
+> MedLattice 用于模型工程实验与技术验证，不是医疗诊断或治疗系统。项目中的评测结果不能替代医生判断，也不能解释为临床安全性或医疗准确率。
+
+## 项目概览
+
+MedLattice 面向中文医疗问答场景，验证从数据处理、模型微调、检索增强到安全审查的完整工程链路。项目将训练对照、RAG 检索和安全控制拆成可以独立运行和评测的模块，并为每个阶段保留配置、运行元数据、结果和限制说明。
+
+### 核心能力
+
+| 模块 | 内容 |
+| --- | --- |
+| 训练对照 | QLoRA/SFT、合成偏好 DPO、公开偏好数据 DPO、hard-negative DPO、可验证奖励 GRPO |
+| 检索增强 | BGE dense retrieval、SQLite vector store、FAISS HNSW、BM25 和 Cross-Encoder reranker |
+| 生成链路 | 带引用编号的上下文 prompt、Qwen3-1.7B 生成、引用和 grounded answer 代理评测 |
+| 安全控制 | 资料不足拒答、高风险意图拦截、Constitutional AI-inspired critic/revision、确定性 hard gate |
+| 可复现性 | 固定数据版本、SHA-256、seed、deterministic 开关、预测漂移和延迟记录 |
 
 ## 系统架构
 
-训练对照链路与 RAG 链路相互隔离：
+![MedLattice 系统总览（中文）](assets/medlattice-overview-zh.png)
 
-~~~text
-CMB-Exam train split
-        │
-        ├── 数据清洗与格式转换
-        │       └── QLoRA/SFT
-        │               ├── DPO 偏好优化
-        │               └── GRPO 可验证奖励优化
-        │
-        └── 闭域检索语料
-                └── BGE embedding
-                        └── SQLite / FAISS HNSW
-                                └── BM25 / Cross-Encoder reranker
-                                        └── Qwen3-1.7B 生成
-                                                └── 引用与安全审查
-                                                        └── hard gate / 安全模板
-~~~
+训练对照链路和 RAG 链路保持变量隔离：
 
-其中，CMB train-only RAG 使用的是已解答考试例题构成的闭域检索语料，不是经过临床审核的通用医学知识库。
+- CMB-Exam train split 用于 QLoRA/SFT、DPO 和 GRPO 的训练对照；
+- CMB train-only 语料和合成演示文档用于闭域检索实验；
+- 生成式 RAG 使用基础 Qwen 建立对照，安全层单独记录 critic、revision 和 hard gate；
+- CMB train-only RAG 检索的是已解答考试例题，不是经过临床审核的通用医学知识库。
 
-## 核心实验结果
+## 核心结果
 
 ### CMB-Exam 闭域选择题
 
 评测集为与训练隔离的 240 条 CMB-Exam val，指标为选项字母 exact-match accuracy。该指标只表示选择题答案匹配率，不代表开放式医疗问答能力。
 
-| 实验阶段 | 结果 | 相对 QLoRA/SFT | 说明 |
+| 实验阶段 | 结果 | 相对 QLoRA/SFT | 结论 |
 | --- | ---: | ---: | --- |
 | Qwen3-1.7B 直接基线 | 107/240（44.58%） | — | 建立基础模型基线 |
 | QLoRA/SFT | 121/240（50.42%） | — | 相比直接基线提升 5.84 个百分点 |
@@ -56,11 +67,11 @@ CMB-Exam train split
 | GRPO v0：可验证奖励 | 122/240（50.83%） | +1 题 | 单 seed、窄任务上的轻微正向结果 |
 | CMB train-only dense + BM25 RAG | 115/240（47.92%） | 不直接比较 | 检索链路验证，不等同于通用医学 RAG |
 
-主要结论是：在本项目的中文选择题任务上，QLoRA/SFT 是最明确的性能收益来源；DPO 和 GRPO 完成了可审计的训练与对照实验，但目前没有证明稳定的医疗能力提升。
+在当前中文选择题任务上，QLoRA/SFT 是最明确的性能收益来源；DPO 和 GRPO 完成了可审计的训练与对照实验，但尚未证明稳定的医疗能力提升。
 
 ### 生成式 RAG 演示
 
-在仓库内 5 条合成知识文档和 5 条合成查询上，使用 BGE dense retrieval 与 Qwen3-1.7B 完成端到端生成：
+在 5 条合成知识文档和 5 条合成查询上，BGE dense retrieval 与 Qwen3-1.7B 完成端到端生成：
 
 | 指标 | 结果 |
 | --- | ---: |
@@ -71,11 +82,11 @@ CMB-Exam train split
 | Constitutional hard gate 最终通过 | 5/5 |
 | Hard gate fallback | 0/5 |
 
-该结果用于证明演示链路可运行，样本规模很小，不能解释为真实医疗问答效果。
+这些结果用于证明演示链路可运行，样本规模很小，不能解释为真实医疗问答效果。
 
 ### Constitutional AI-inspired 安全层
 
-v1.1 使用 24 个场景族生成 120 条本地合成 benchmark，违规与安全样本各 60 条，并按 dev、holdout、challenge 分层。
+v1.1 使用 24 个场景族生成 120 条本地合成 benchmark，违规与安全样本各 60 条，并按 dev、holdout、challenge 分层：
 
 | 指标 | 结果 |
 | --- | ---: |
@@ -91,18 +102,24 @@ v1.1 使用 24 个场景族生成 120 条本地合成 benchmark，违规与安�
 
 ## 快速开始
 
-### 环境安装
+### 环境要求
 
-建议使用 Python 3.10 或更高版本，并根据本机 CUDA 环境安装对应版本的 PyTorch。
+- Python 3.10 或更高版本；
+- 按本机 CUDA 环境安装对应版本的 PyTorch；
+- 基线运行不需要真实医疗数据；
+- 完整训练和 RAG 实验需要额外下载模型、embedding/reranker 权重和经过许可的数据。
+
+### 安装依赖
 
 ~~~powershell
-git clone https://github.com/cartonmouse/qwen-medical-qa.git
-cd qwen-medical-qa
+git clone https://github.com/cartonmouse/qwen-medical-qa.git medlattice
+cd medlattice
+
 python -m pip install -r requirements-baseline.txt
 python scripts/check_environment.py
 ~~~
 
-训练、embedding、FAISS 和 reranker 依赖分别位于以下文件：
+分阶段依赖：
 
 - requirements-qlora.txt
 - requirements-dpo.txt
@@ -119,8 +136,6 @@ pytest -q
 
 ### 运行最小基线
 
-该命令使用仓库内的最小样例数据，不需要真实医疗数据：
-
 ~~~powershell
 python scripts/run_baseline.py --input data/sample_medical_qa.jsonl --output outputs/baseline.jsonl --max-new-tokens 128
 python scripts/summarize_baseline.py --input outputs/baseline.jsonl
@@ -133,28 +148,22 @@ python scripts/run_baseline.py --input data/benchmark_v0.jsonl --output outputs/
 python scripts/evaluate_benchmark.py --input outputs/benchmark_v0_baseline.jsonl --output reports/benchmark-v0-baseline.json
 ~~~
 
-完整的 QLoRA、DPO、GRPO、CMB 闭域 RAG 和 Constitutional 安全层复现实验需要本地准备模型权重、依赖和数据。详细命令、参数、数据版本及输出字段见 [reports/project-final-summary.md](reports/project-final-summary.md)。
+完整复现实验的命令、参数、数据版本和输出字段见 [reports/project-final-summary.md](reports/project-final-summary.md)。
 
-## 目录结构
+## 实验路线
 
-~~~text
-qwen-medical-qa/
-├── configs/                  # 训练、检索和安全实验配置
-├── data/                     # 样例数据、格式说明和来源记录
-├── scripts/                  # 数据处理、训练、推理和评测脚本
-├── src/qwen_medical_qa/      # 可复用的检索、评测和安全模块
-├── tests/                    # 单元测试与数据契约测试
-├── reports/                  # 实验结果、消融和复现记录
-├── CONTEXT.md                # 领域术语、系统边界和数据边界
-├── PROJECT_SPEC.md           # 项目规格与阶段验收标准
-└── requirements-*.txt       # 分阶段依赖
-~~~
+1. **基线与数据**：固定任务口径、数据来源、划分方式和 exact-match 评测；
+2. **QLoRA/SFT**：验证参数高效微调对闭域选择题任务的影响；
+3. **DPO/GRPO**：对照不同偏好优化和可验证奖励训练目标；
+4. **RAG**：从 dense retrieval 扩展到 vector store、ANN、reranker 和生成式引用；
+5. **安全层**：组合 critic、revision、拒答规则和 fail-closed hard gate；
+6. **复现性**：记录运行元数据、预测漂移、检索延迟和失败样本。
 
 ## 实验报告
 
 | 主题 | 报告 |
 | --- | --- |
-| 最终系统总览与结果 | [reports/project-final-summary.md](reports/project-final-summary.md) |
+| 最终系统总览 | [reports/project-final-summary.md](reports/project-final-summary.md) |
 | 基线与数据准备 | [reports/phase-a-baseline.md](reports/phase-a-baseline.md)、[reports/cmb-data-preparation.md](reports/cmb-data-preparation.md) |
 | QLoRA/SFT | [reports/qlora-full.md](reports/qlora-full.md) |
 | DPO | [reports/dpo-v1.md](reports/dpo-v1.md)、[reports/dpo-v2-public-data-audit.md](reports/dpo-v2-public-data-audit.md)、[reports/dpo-cmb-hard-negative-v1.md](reports/dpo-cmb-hard-negative-v1.md) |
@@ -163,34 +172,49 @@ qwen-medical-qa/
 | CMB 闭域 RAG | [reports/cmb-rag-v1.md](reports/cmb-rag-v1.md) |
 | Vector store 与 ANN | [reports/vector-store-reranker-v0.md](reports/vector-store-reranker-v0.md)、[reports/faiss-ann-v1.md](reports/faiss-ann-v1.md) |
 | Neural reranker | [reports/neural-reranker-v1.md](reports/neural-reranker-v1.md) |
-| Constitutional AI-inspired 安全层 | [reports/constitutional-ai-v0.md](reports/constitutional-ai-v0.md)、[reports/constitutional-ai-v1.md](reports/constitutional-ai-v1.md)、[reports/constitutional-ai-v1.1.md](reports/constitutional-ai-v1.1.md) |
-| 可复现性与预测漂移 | [reports/reproducibility-v1.md](reports/reproducibility-v1.md) |
+| 安全层 | [reports/constitutional-ai-v0.md](reports/constitutional-ai-v0.md)、[reports/constitutional-ai-v1.md](reports/constitutional-ai-v1.md)、[reports/constitutional-ai-v1.1.md](reports/constitutional-ai-v1.1.md) |
+| 可复现性 | [reports/reproducibility-v1.md](reports/reproducibility-v1.md) |
+
+## 目录结构
+
+~~~text
+medlattice/
+├── configs/                  # 训练、检索和安全实验配置
+├── data/                     # 样例数据、格式说明和来源记录
+├── scripts/                  # 数据处理、训练、推理和评测脚本
+├── src/qwen_medical_qa/      # 可复用的检索、评测和安全模块
+├── tests/                    # 单元测试与数据契约测试
+├── assets/                   # 项目图标和系统架构图
+├── reports/                  # 实验结果、消融和复现记录
+├── CONTEXT.md                # 领域术语、系统边界和数据边界
+└── PROJECT_SPEC.md           # 项目规格与阶段验收标准
+~~~
 
 ## 数据、模型与安全边界
 
-- 仓库不包含真实患者数据、真实医疗知识库、完整基础模型权重或 API 密钥。
-- CMB-Exam 原始数据、处理结果、派生闭域语料和本地索引保留在本地，不随仓库分发。
-- 公开数据和模型需要从原始来源获取，并分别核验版本、许可证、脱敏和再分发条件。
-- 项目中的 CMB exact-match、合成 RAG 指标和合成安全 benchmark 仅用于工程验证。
+- 仓库不包含真实患者数据、真实医疗知识库、完整基础模型权重或 API 密钥；
+- CMB-Exam 原始数据、处理结果、派生闭域语料和本地索引保留在本地，不随仓库分发；
+- 公开数据和模型需要从原始来源获取，并分别核验版本、许可证、脱敏和再分发条件；
+- CMB exact-match、合成 RAG 指标和合成安全 benchmark 仅用于工程验证；
 - Constitutional 安全层是“模型审查 + 确定性规则兜底”的实验架构，不是临床安全系统。
 
 数据来源记录见 [data/sources/cmb-exam.yaml](data/sources/cmb-exam.yaml)、[data/sources/ultramedical-preference.yaml](data/sources/ultramedical-preference.yaml) 和 [data/sources/rag-knowledge-base.template.yaml](data/sources/rag-knowledge-base.template.yaml)。
 
 ## 当前状态
 
-当前仓库提供一套可在本地运行的 CLI 实验系统，已覆盖：
+当前版本提供一套可在本地运行的 CLI 实验系统，覆盖：
 
 - Qwen3-1.7B 基线推理与确定性评测；
 - CMB-Exam 数据处理、QLoRA/SFT、DPO 和 GRPO 对照；
 - BGE dense retrieval、SQLite vector store、FAISS HNSW、BM25 和 Cross-Encoder reranker；
 - 带引用的生成式 RAG；
-- 资料不足拒答、高风险意图拦截、Constitutional AI-inspired critic/revision 和 hard gate；
+- 资料不足拒答、高风险意图拦截、critic/revision 和 hard gate；
 - 实验元数据、预测漂移分析、结果报告和自动化测试。
 
-当前版本不包含生产级服务部署、真实授权医学知识库接入和临床验证。
+当前版本聚焦本地可复现实验，不包含生产级服务部署、真实授权医学知识库接入和临床验证。
 
-## 相关文档
+## 第三方资源与许可证
 
-- [CONTEXT.md](CONTEXT.md)：项目领域术语、系统边界和数据边界；
-- [PROJECT_SPEC.md](PROJECT_SPEC.md)：项目规格、阶段目标和验收标准；
-- [data/README.md](data/README.md)：数据目录和本地数据使用说明。
+Qwen3、BGE、FAISS、CMB-Exam、UltraMedical-Preference 以及其他第三方资源分别遵循各自的许可证和使用条件。使用前请从原始来源获取资源，并核验版本、许可证、脱敏和再分发权限。
+
+项目代码与实验报告不授予第三方模型或数据集的额外权利。

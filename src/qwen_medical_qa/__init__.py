@@ -1,4 +1,3 @@
-"""Reusable components for the Qwen Medical QA learning project."""
+"""Reusable components for the MedLattice model engineering project."""
 
 __version__ = "0.1.0"
-

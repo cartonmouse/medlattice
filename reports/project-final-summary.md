@@ -1,4 +1,4 @@
-# Qwen 医疗问答实验项目：最终阶段总结
+# MedLattice：中文医疗问答模型工程最终实验总结
 
 ## 1. 项目定位
 
@@ -79,7 +79,7 @@
 前提是已经准备好本地 Qwen、BGE 和 `outputs/rag-embedding-v1/index.json`。运行：
 
 ```powershell
-$env:HF_HOME = "C:\\path\\to\\qwen-medical-qa\\.hf-cache"
+$env:HF_HOME = "C:\\path\\to\\medlattice\\.hf-cache"
 $env:PYTHONPATH = "$PWD/src"
 
 python scripts/run_rag_qa.py `
